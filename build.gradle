@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.0.0'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10" // 에러 이슈로 삭제
+    // id "com.ewerk.gradle.plugins.querydsl" version "1.0.10" // 에러 이슈로 삭제
 }
 
 group = 'com.example'
@@ -44,6 +44,9 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'	// swagger
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 sourceSets {
@@ -61,17 +64,17 @@ tasks.named('test') {
 // Querydsl 설정부
 def generated = 'src/main/generated'
 
-querydsl {
-    jpa = true
-    querydslSourcesDir = generated
-}
+//querydsl {
+//    jpa = true
+//    querydslSourcesDir = generated
+//}
 sourceSets {
     main.java.srcDir generated
 }
 
-compileQuerydsl{
-    options.annotationProcessorPath = configurations.querydsl
-}
+//compileQuerydsl{
+//    options.annotationProcessorPath = configurations.querydsl
+//}
 
 configurations {
     compileOnly {
