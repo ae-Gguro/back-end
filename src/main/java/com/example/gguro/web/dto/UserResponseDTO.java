@@ -1,0 +1,16 @@
+package com.example.gguro.web.dto;
+
+import lombok.*;
+
+public class UserResponseDTO {
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserLoginResponseDTO {
+        private String accessToken;
+        private String grantType;
+        private Long expiresIn;
+    }
+}
