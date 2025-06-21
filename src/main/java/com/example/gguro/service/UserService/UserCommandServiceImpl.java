@@ -65,6 +65,7 @@ public class UserCommandServiceImpl implements UserCommandService{
 
         return UserResponseDTO.UserLoginResponseDTO.builder()
                 .accessToken(tokenDTO.getAccessToken())
+                .refreshToken(tokenDTO.getRefreshToken())
                 .grantType(tokenDTO.getGrantType())
                 .expiresIn(tokenDTO.getAccessTokenExpiresIn())
                 .build();
