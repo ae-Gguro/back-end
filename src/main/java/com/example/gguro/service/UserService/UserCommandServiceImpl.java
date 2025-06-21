@@ -22,7 +22,7 @@ import java.util.Collections;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class UserCommandServiceImpl extends UserCommandService{
+public class UserCommandServiceImpl implements UserCommandService{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
