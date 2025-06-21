@@ -10,6 +10,7 @@ public class UserResponseDTO {
     @AllArgsConstructor
     public static class UserLoginResponseDTO {
         private String accessToken;
+        private String refreshToken;
         private String grantType;
         private Long expiresIn;
     }
