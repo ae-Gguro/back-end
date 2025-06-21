@@ -26,4 +26,16 @@ public class UserRequestDTO {
         @NotBlank
         private String checkPassword;
     }
+
+    @Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserLogInDTO {
+        @NotBlank
+        private String username;
+
+        @NotBlank
+        private String password;
+    }
 }
