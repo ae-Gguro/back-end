@@ -14,4 +14,14 @@ public class UserResponseDTO {
         private String grantType;
         private Long expiresIn;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfoDTO {
+        private Long id;
+        private String username;
+        private String nickname;
+    }
 }
