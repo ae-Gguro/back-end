@@ -23,8 +23,7 @@ public class UserController {
     @PostMapping("/api/user/info")
     @Operation(summary = "유저 정보 조회 API - 인증 필요", description = "유저 정보를 조회하는 API입니다.")
     public ApiResponse<UserResponseDTO.UserInfoDTO> getUserInfo (
-            HttpServletRequest request
     ){
-        return ApiResponse.onSuccess(userQueryService.getUserInfo(request));
+        return ApiResponse.onSuccess(userQueryService.getUserInfo());
     }
 }

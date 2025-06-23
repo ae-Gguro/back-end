@@ -4,5 +4,5 @@ import com.example.gguro.web.dto.UserResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserQueryService {
-    UserResponseDTO.UserInfoDTO getUserInfo(HttpServletRequest request);
+    UserResponseDTO.UserInfoDTO getUserInfo();
 }

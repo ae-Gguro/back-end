@@ -32,7 +32,8 @@ public enum ErrorStatus implements BaseErrorCode {
     PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER4002", "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4003", "유저가 존재하지 않습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "USER4004", "비밀번호가 존재하지 않습니다."),
-    INVALID_TOKEN(HttpStatus.BAD_REQUEST, "USER4005", "유효하지 않은 토큰입니다.");
+    INVALID_TOKEN(HttpStatus.BAD_REQUEST, "USER4005", "유효하지 않은 토큰입니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER4006", "인증이 필요한 요청입니다.");
 
 
 
