@@ -25,9 +25,9 @@ public class UserQueryServiceImpl implements UserQueryService {
             throw new UserHandler(ErrorStatus.UNAUTHORIZED);
         }
 
-        String username = authentication.getName();
+        Long userId = (Long) authentication.getPrincipal();
 
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
 
         return UserConverter.toUserInfoDTO(user);
