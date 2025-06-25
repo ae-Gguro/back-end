@@ -58,7 +58,7 @@ public class UserCommandServiceImpl implements UserCommandService{
         }
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), null,
+                user.getId(), null,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
 
         TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
