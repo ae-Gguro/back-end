@@ -19,14 +19,7 @@ public class UserQueryServiceImpl implements UserQueryService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponseDTO.UserInfoDTO getUserInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new UserHandler(ErrorStatus.UNAUTHORIZED);
-        }
-
-        Long userId = (Long) authentication.getPrincipal();
-
+    public UserResponseDTO.UserInfoDTO getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
 

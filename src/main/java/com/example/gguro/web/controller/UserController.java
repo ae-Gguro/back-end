@@ -6,9 +6,11 @@ import com.example.gguro.web.dto.UserResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -19,11 +21,11 @@ public class UserController {
 
     private final UserQueryService userQueryService;
 
-    // 기본 회원가입 API
-    @PostMapping("/api/user/info")
+    @GetMapping("/api/user/info")
     @Operation(summary = "유저 정보 조회 API - 인증 필요", description = "유저 정보를 조회하는 API입니다.")
     public ApiResponse<UserResponseDTO.UserInfoDTO> getUserInfo (
+            @AuthenticationPrincipal Long userId
     ){
-        return ApiResponse.onSuccess(userQueryService.getUserInfo());
+        return ApiResponse.onSuccess(userQueryService.getUserInfo(userId));
     }
 }
