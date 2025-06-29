@@ -7,8 +7,6 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -24,20 +22,24 @@ public class User extends BaseEntity {
     private Long id;
 
     // 유저 아이디
-    @Column(name = "username", nullable = false, length = 20)
+    @Column(name = "username", nullable = true, length = 20)
     private String username;
 
     // 비밀번호
-    @Column(name = "password", nullable = false, length = 100)
+    @Column(name = "password", nullable = true, length = 100)
     private String password;
 
     // 보호자 이름
-    @Column(name = "nickname", nullable = false, length = 20)
+    @Column(name = "nickname", nullable = true, length = 20)
     private String nickname;
 
     // 소셜 로그인 여부
     @Column(name = "is_social_login", nullable = false)
     private Boolean isSocialLogin;
+
+    // 이메일 (소셜 로그인 식별)
+    @Column(name = "email", nullable = true)
+    private String email;
 
     // 소셜 로그인 타입 -> ENUM으로 수정
     @Enumerated(EnumType.STRING)
