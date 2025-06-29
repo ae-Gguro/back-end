@@ -3,11 +3,13 @@ package com.example.gguro.web.controller;
 import com.example.gguro.apiPayload.ApiResponse;
 import com.example.gguro.domain.User;
 import com.example.gguro.service.OAuthService.KakaoLoginCommandService;
+import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.kakao.KakaoLoginResponseDTO;
+import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,6 +25,7 @@ public class AuthController {
 
     private final UserCommandService userCommandService;
     private final KakaoLoginCommandService kakaoLoginService;
+    private final NaverLoginCommandService naverLoginCommandSeervice;
 
     // 기본 회원가입 API
     @PostMapping("/api/auth/signup")
@@ -42,10 +45,17 @@ public class AuthController {
         return ApiResponse.onSuccess(userCommandService.login(request));
     }
 
+    // 카카오 로그인
     @PostMapping("/api/auth/kakao")
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> kakaoLogin(@RequestBody @Valid KakaoLoginRequestDTO request) {
-        // KakaoLoginRequest 에는 프론트가 보내준 accessToken 이 담겨있음
         UserResponseDTO.UserLoginResponseDTO serviceToken = kakaoLoginService.login(request.getAccessToken());
+        return ApiResponse.onSuccess(serviceToken);
+    }
+
+    // 네이버 로그인
+    @PostMapping("/api/auth/naver")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> naverLogin(@RequestBody @Valid NaverLoginRequestDTO request) {
+        UserResponseDTO.UserLoginResponseDTO serviceToken = naverLoginCommandSeervice.login(request.getAccessToken());
         return ApiResponse.onSuccess(serviceToken);
     }
 
