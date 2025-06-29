@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserCommandService userCommandService;
-    private final KakaoLoginCommandService kakaoLoginService;
-    private final NaverLoginCommandService naverLoginCommandSeervice;
+    private final KakaoLoginCommandService kakaoLoginCommandService;
+    private final NaverLoginCommandService naverLoginCommandService;
 
     // 기본 회원가입 API
     @PostMapping("/api/auth/signup")
@@ -48,14 +48,14 @@ public class AuthController {
     // 카카오 로그인
     @PostMapping("/api/auth/kakao")
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> kakaoLogin(@RequestBody @Valid KakaoLoginRequestDTO request) {
-        UserResponseDTO.UserLoginResponseDTO serviceToken = kakaoLoginService.login(request.getAccessToken());
+        UserResponseDTO.UserLoginResponseDTO serviceToken = kakaoLoginCommandService.login(request.getAccessToken());
         return ApiResponse.onSuccess(serviceToken);
     }
 
     // 네이버 로그인
     @PostMapping("/api/auth/naver")
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> naverLogin(@RequestBody @Valid NaverLoginRequestDTO request) {
-        UserResponseDTO.UserLoginResponseDTO serviceToken = naverLoginCommandSeervice.login(request.getAccessToken());
+        UserResponseDTO.UserLoginResponseDTO serviceToken = naverLoginCommandService.login(request.getAccessToken());
         return ApiResponse.onSuccess(serviceToken);
     }
 
