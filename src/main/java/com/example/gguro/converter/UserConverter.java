@@ -22,7 +22,7 @@ public class UserConverter {
         return User.builder()
                 .isSocialLogin(true)
                 .email(email)
-                .oauthType(SocialType.KAKAO)
+                .oauthType(socialType)
                 .nickname(nickname)
                 .build();
     }

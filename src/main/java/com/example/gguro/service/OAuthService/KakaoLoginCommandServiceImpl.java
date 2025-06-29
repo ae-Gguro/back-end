@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -58,11 +59,17 @@ public class KakaoLoginCommandServiceImpl implements KakaoLoginCommandService {
 
     // 비동기 처리
     private KakaoLoginResponseDTO.KakaoUserInfo getUserInfo(String accessToken) {
-        return webClient.get()
-                .uri("https://kapi.kakao.com/v2/user/me")
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve()
-                .bodyToMono(KakaoLoginResponseDTO.KakaoUserInfo.class)
-                .block();
+        try {
+            return webClient.get()
+                    .uri("https://kapi.kakao.com/v2/user/me")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> Mono.error(new RuntimeException("카카오 API 호출 실패: " + response.statusCode())))
+                    .bodyToMono(KakaoLoginResponseDTO.KakaoUserInfo.class)
+                    .block();
+        } catch (Exception e) {
+            throw new RuntimeException("카카오 사용자 정보 조회에 실패했습니다", e);
+        }
     }
 }
