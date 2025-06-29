@@ -41,6 +41,10 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = true)
     private String email;
 
+    // 애플 로그인 시 제공하는 고유 식별자 (sub : 유저의 애플 id 고유 id)
+    @Column(name = "oauth_id", nullable = true, unique = true)
+    private String oauthId;
+
     // 소셜 로그인 타입 -> ENUM으로 수정
     @Enumerated(EnumType.STRING)
     @Column(name = "oauth_type", nullable = false)

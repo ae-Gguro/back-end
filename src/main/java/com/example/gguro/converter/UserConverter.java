@@ -44,4 +44,13 @@ public class UserConverter {
                 .build();
     }
 
+    public static User toUserWithOauthId(String oauthId, String email, String nickname, SocialType socialType) {
+        return User.builder()
+                .oauthType(socialType)
+                .nickname(nickname)
+                .isSocialLogin(true)
+                .oauthId(oauthId)
+                .email(email)
+                .build();
+    }
 }
