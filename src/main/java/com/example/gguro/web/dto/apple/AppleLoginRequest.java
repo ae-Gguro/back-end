@@ -2,6 +2,7 @@ package com.example.gguro.web.dto.apple;
 
 import lombok.Getter;
 
+@Getter
 public class AppleLoginRequest {
     private String code;
     private String idToken;
