@@ -72,25 +72,7 @@ public class AuthController {
             @RequestParam("code") String code,
             @RequestParam(value = "user", required = false) String userJson
     ) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        AppleLoginRequest.AppleUser parsedUser = null;
-
-        try {
-            if (userJson != null) {
-                parsedUser = objectMapper.readValue(userJson, AppleLoginRequest.AppleUser.class);
-            }
-        } catch (JsonProcessingException e) {
-            log.warn("Apple user JSON 파싱 실패", e);
-        }
-
-        String nickname = "사용자";
-        if (parsedUser != null && parsedUser.getName() != null) {
-            String first = parsedUser.getName().getFirstName();
-            String last = parsedUser.getName().getLastName();
-            nickname = ((last != null ? last : "") + (first != null ? first : "")).trim();
-        }
-
-        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, nickname));
+        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
     }
 
 }

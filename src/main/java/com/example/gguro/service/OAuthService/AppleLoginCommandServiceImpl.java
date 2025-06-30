@@ -11,8 +11,11 @@ import com.example.gguro.jwt.TokenProvider;
 import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.TokenDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleLoginRequest;
 import com.example.gguro.web.dto.apple.AppleSocialTokenInfoResponse;
 import com.example.gguro.web.dto.apple.AppleUserInfoResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -66,28 +69,54 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     private final String APPLE_URL = "https://appleid.apple.com";
 
     @Override
-    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String nickname) throws IOException {
+    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String userJson) throws IOException {
         AppleUserInfoResponse userInfo = getAppleUserInfo(code);
 
         String oauthId = userInfo.getSub();
         String email = userInfo.getEmail();
 
         Optional<User> optionalUser = userRepository.findByOauthId(oauthId);
-        User user = optionalUser.orElseGet(() -> {
-            // nickname을 여기서 그대로 사용!
-            User newUser = UserConverter.toUserWithOauthId(oauthId, email, nickname, SocialType.APPLE);
-            return userRepository.save(newUser);
-        });
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    user.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+            );
+
+            TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
+            return UserConverter.toUserLoginResponseDTO(tokenDTO);
+        }
+
+        String nickname = "사용자";
+        if (userJson != null) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                AppleLoginRequest.AppleUser parsedUser = objectMapper.readValue(userJson, AppleLoginRequest.AppleUser.class);
+
+                if (parsedUser.getName() != null) {
+                    String first = parsedUser.getName().getFirstName();
+                    String last = parsedUser.getName().getLastName();
+                    nickname = ((last != null ? last : "") + (first != null ? first : "")).trim();
+                }
+
+            } catch (JsonProcessingException e) {
+                log.warn("Apple user JSON 파싱 실패", e);
+            }
+        }
+
+        User newUser = UserConverter.toUserWithOauthId(oauthId, email, nickname, SocialType.APPLE);
+        userRepository.save(newUser);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                newUser.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
         TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
         return UserConverter.toUserLoginResponseDTO(tokenDTO);
     }
 
-    private AppleUserInfoResponse getAppleUserInfo(String code) throws IOException {
+    private AppleUserInfoResponse getAppleUserInfo(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
