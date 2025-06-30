@@ -7,6 +7,10 @@ build/
 
 /src/main/resources/application.yml
 
+# Apple OAuth key
+src/main/resources/keys/
+src/main/resources/keys/*.p8
+
 ### STS ###
 .apt_generated
 .classpath
