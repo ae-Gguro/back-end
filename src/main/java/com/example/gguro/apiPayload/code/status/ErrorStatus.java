@@ -27,6 +27,15 @@ public enum ErrorStatus implements BaseErrorCode {
     // TEMP 관련 에러 (테스트)
     TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트 !"),
 
+    // Apple OAuth 관련 에러
+    APPLE_PUBLIC_KEY_RETRIEVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5001", "Apple 공개키를 가져오는 데 실패했습니다."),
+    APPLE_ID_TOKEN_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5002", "ID 토큰 파싱에 실패했습니다."),
+    APPLE_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST, "APPLE4001", "잘못된 authorization code입니다."),
+    APPLE_ID_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "APPLE4002", "Apple로부터 유효한 ID 토큰을 받지 못했습니다."),
+    APPLE_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "APPLE4003", "Apple 로그인에 실패했습니다."),
+    APPLE_PRIVATE_KEY_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5003", "Apple 비공개 키 파싱에 실패했습니다."),
+    APPLE_CLIENT_SECRET_GENERATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5004", "Apple Client Secret 생성에 실패했습니다."),
+
     // User 관련 에러
     USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER4001", "유저가 이미 존재합니다."),
     PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER4002", "비밀번호가 일치하지 않습니다."),

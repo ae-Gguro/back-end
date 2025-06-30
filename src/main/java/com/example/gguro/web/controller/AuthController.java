@@ -8,7 +8,6 @@ import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
-import com.example.gguro.web.dto.apple.AppleLoginRequestDTO;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.kakao.KakaoLoginResponseDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;

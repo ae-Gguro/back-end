@@ -2,6 +2,8 @@ package com.example.gguro.service.OAuthService;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.gguro.apiPayload.code.status.ErrorStatus;
+import com.example.gguro.apiPayload.exception.handler.AppleLoginHandler;
 import com.example.gguro.converter.UserConverter;
 import com.example.gguro.domain.User;
 import com.example.gguro.domain.enums.SocialType;
@@ -24,6 +26,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -87,41 +91,60 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        String body = "client_id=" + clientId +
-                "&client_secret=" + generateClientSecret() +
-                "&code=" + code +
-                "&grant_type=authorization_code" +
-                "&redirect_uri=" + redirectUri;
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", clientId);
+        params.add("client_secret", generateClientSecret());
+        params.add("code", code);
+        params.add("grant_type", "authorization_code");
+        params.add("redirect_uri", redirectUri);
 
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<AppleSocialTokenInfoResponse> response = new RestTemplate().exchange(
-                APPLE_URL + "/auth/token",
-                HttpMethod.POST,
-                request,
-                AppleSocialTokenInfoResponse.class
-        );
+        ResponseEntity<AppleSocialTokenInfoResponse> response;
+        try {
+            response = new RestTemplate().exchange(
+                    APPLE_URL + "/auth/token",
+                    HttpMethod.POST,
+                    request,
+                    AppleSocialTokenInfoResponse.class
+            );
+        } catch (Exception e) {
+            throw new AppleLoginHandler(ErrorStatus.APPLE_AUTH_CODE_INVALID);
+        }
 
-        DecodedJWT jwt = JWT.decode(Objects.requireNonNull(response.getBody()).getIdToken());
+        AppleSocialTokenInfoResponse tokenInfo = response.getBody();
+        if (tokenInfo == null || tokenInfo.getIdToken() == null) {
+            throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_MISSING);
+        }
 
-        return AppleUserInfoResponse.builder()
-                .sub(jwt.getClaim("sub").asString())
-                .name(jwt.getClaim("name") != null ? jwt.getClaim("name").asString() : null)
-                .email(jwt.getClaim("email") != null ? jwt.getClaim("email").asString() : null)
-                .build();
+        try {
+            DecodedJWT jwt = JWT.decode(tokenInfo.getIdToken());
+
+            return AppleUserInfoResponse.builder()
+                    .sub(jwt.getClaim("sub").asString())
+                    .name(jwt.getClaim("name") != null ? jwt.getClaim("name").asString() : null)
+                    .email(jwt.getClaim("email") != null ? jwt.getClaim("email").asString() : null)
+                    .build();
+        } catch (Exception e) {
+            throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_PARSE_FAIL);
+        }
     }
 
     private String generateClientSecret() {
-        LocalDateTime exp = LocalDateTime.now().plusMinutes(5);
-        return Jwts.builder()
-                .setHeaderParam(JwsHeader.KEY_ID, keyId)
-                .setIssuer(teamId)
-                .setAudience(APPLE_URL)
-                .setSubject(clientId)
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(exp.atZone(ZoneId.systemDefault()).toInstant()))
-                .signWith(getPrivateKey(), SignatureAlgorithm.ES256)
-                .compact();
+        try {
+            LocalDateTime exp = LocalDateTime.now().plusMinutes(5);
+            return Jwts.builder()
+                    .setHeaderParam(JwsHeader.KEY_ID, keyId)
+                    .setIssuer(teamId)
+                    .setAudience(APPLE_URL)
+                    .setSubject(clientId)
+                    .setIssuedAt(new Date())
+                    .setExpiration(Date.from(exp.atZone(ZoneId.systemDefault()).toInstant()))
+                    .signWith(getPrivateKey(), SignatureAlgorithm.ES256)
+                    .compact();
+        } catch (Exception e) {
+            throw new AppleLoginHandler(ErrorStatus.APPLE_CLIENT_SECRET_GENERATION_FAIL);
+        }
     }
 
     private PrivateKey getPrivateKey() {
@@ -136,7 +159,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            throw new RuntimeException("Apple 비공개키 파싱 실패", e);
+            throw new AppleLoginHandler(ErrorStatus.APPLE_PRIVATE_KEY_PARSE_FAIL);
         }
     }
 }
