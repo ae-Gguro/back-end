@@ -66,15 +66,15 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     private final String APPLE_URL = "https://appleid.apple.com";
 
     @Override
-    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code) throws IOException {
+    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String nickname) throws IOException {
         AppleUserInfoResponse userInfo = getAppleUserInfo(code);
 
         String oauthId = userInfo.getSub();
-        String nickname = userInfo.getName() != null ? userInfo.getName() : "사용자";
-        String email = userInfo.getEmail();  // null일 수도 있음 (hide email 옵션일 경우)
+        String email = userInfo.getEmail();
 
         Optional<User> optionalUser = userRepository.findByOauthId(oauthId);
         User user = optionalUser.orElseGet(() -> {
+            // nickname을 여기서 그대로 사용!
             User newUser = UserConverter.toUserWithOauthId(oauthId, email, nickname, SocialType.APPLE);
             return userRepository.save(newUser);
         });

@@ -8,9 +8,11 @@ import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleLoginRequest;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
-import com.example.gguro.web.dto.kakao.KakaoLoginResponseDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -66,9 +68,29 @@ public class AuthController {
 
     // 애플 로그인
     @PostMapping("/api/auth/apple")
-    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(@RequestParam("code") String code) throws IOException {
-        UserResponseDTO.UserLoginResponseDTO serviceToken = appleLoginCommandService.appleLogin(code);
-        return ApiResponse.onSuccess(serviceToken);
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
+            @RequestParam("code") String code,
+            @RequestParam(value = "user", required = false) String userJson
+    ) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        AppleLoginRequest.AppleUser parsedUser = null;
+
+        try {
+            if (userJson != null) {
+                parsedUser = objectMapper.readValue(userJson, AppleLoginRequest.AppleUser.class);
+            }
+        } catch (JsonProcessingException e) {
+            log.warn("Apple user JSON 파싱 실패", e);
+        }
+
+        String nickname = "사용자";
+        if (parsedUser != null && parsedUser.getName() != null) {
+            String first = parsedUser.getName().getFirstName();
+            String last = parsedUser.getName().getLastName();
+            nickname = ((last != null ? last : "") + (first != null ? first : "")).trim();
+        }
+
+        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, nickname));
     }
 
 }
