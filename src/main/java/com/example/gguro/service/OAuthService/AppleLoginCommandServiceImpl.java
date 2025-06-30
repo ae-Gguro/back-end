@@ -69,7 +69,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     private final String APPLE_URL = "https://appleid.apple.com";
 
     @Override
-    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String userJson) throws IOException {
+    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String userJson) {
         AppleUserInfoResponse userInfo = getAppleUserInfo(code);
 
         String oauthId = userInfo.getSub();

@@ -71,7 +71,7 @@ public class AuthController {
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
             @RequestParam("code") String code,
             @RequestParam(value = "user", required = false) String userJson
-    ) throws IOException {
+    ) {
         return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
     }
 
