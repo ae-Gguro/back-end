@@ -1,10 +1,12 @@
 package com.example.gguro.converter;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.gguro.domain.User;
 import com.example.gguro.domain.enums.SocialType;
 import com.example.gguro.web.dto.TokenDTO;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleUserInfoResponse;
 
 public class UserConverter {
 
@@ -51,6 +53,22 @@ public class UserConverter {
                 .isSocialLogin(true)
                 .oauthId(oauthId)
                 .email(email)
+                .build();
+    }
+
+    public static AppleUserInfoResponse toAppleUserInfo(DecodedJWT jwt) {
+        String sub = jwt.getClaim("sub").asString();
+        String email = jwt.getClaim("email").asString();
+        String firstName = jwt.getClaim("given_name").asString();     // firstName
+        String lastName = jwt.getClaim("family_name").asString();     // lastName
+        String name = ((lastName != null ? lastName : "") + (firstName != null ? firstName : "")).trim();
+
+        return AppleUserInfoResponse.builder()
+                .sub(sub)
+                .email(email != null ? email : null)
+                .name(!name.isEmpty() ? name : null)
+                .firstName(firstName)
+                .lastName(lastName)
                 .build();
     }
 }

@@ -120,18 +120,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         try {
             DecodedJWT jwt = JWT.decode(tokenInfo.getIdToken());
 
-            String firstName = jwt.getClaim("given_name").asString();  // = firstName
-            String lastName = jwt.getClaim("family_name").asString();  // = lastName
-
-            String nickname = (lastName != null ? lastName : "") + (firstName != null ? firstName : "");
-
-            return AppleUserInfoResponse.builder()
-                    .sub(jwt.getClaim("sub").asString())
-                    .email(jwt.getClaim("email") != null ? jwt.getClaim("email").asString() : null)
-                    .name(nickname.isEmpty() ? null : nickname)  // name 필드 = nickname 용
-                    .firstName(firstName)
-                    .lastName(lastName)
-                    .build();
+            return UserConverter.toAppleUserInfo(jwt);
         } catch (Exception e) {
             throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_PARSE_FAIL);
         }
