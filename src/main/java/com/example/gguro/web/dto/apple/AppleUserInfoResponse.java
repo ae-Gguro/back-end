@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 public class AppleUserInfoResponse {
     private String sub;    // 애플 고유 ID
     private String email;
-    private String name;
+    private String name;   // lastname+firstname
+    private String lastName;
+    private String firstName;
 }
