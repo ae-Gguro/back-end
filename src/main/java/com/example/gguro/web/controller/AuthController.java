@@ -2,20 +2,26 @@ package com.example.gguro.web.controller;
 
 import com.example.gguro.apiPayload.ApiResponse;
 import com.example.gguro.domain.User;
+import com.example.gguro.service.OAuthService.AppleLoginCommandService;
 import com.example.gguro.service.OAuthService.KakaoLoginCommandService;
 import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleLoginRequest;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
-import com.example.gguro.web.dto.kakao.KakaoLoginResponseDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +32,7 @@ public class AuthController {
     private final UserCommandService userCommandService;
     private final KakaoLoginCommandService kakaoLoginCommandService;
     private final NaverLoginCommandService naverLoginCommandService;
+    private final AppleLoginCommandService appleLoginCommandService;
 
     // 기본 회원가입 API
     @PostMapping("/api/auth/signup")
@@ -57,6 +64,15 @@ public class AuthController {
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> naverLogin(@RequestBody @Valid NaverLoginRequestDTO request) {
         UserResponseDTO.UserLoginResponseDTO serviceToken = naverLoginCommandService.login(request.getAccessToken());
         return ApiResponse.onSuccess(serviceToken);
+    }
+
+    // 애플 로그인
+    @PostMapping("/api/auth/apple")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
+            @RequestParam("code") String code,
+            @RequestParam(value = "user", required = false) String userJson
+    ) {
+        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
     }
 
 }
