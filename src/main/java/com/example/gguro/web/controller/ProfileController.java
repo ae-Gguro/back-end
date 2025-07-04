@@ -2,6 +2,7 @@ package com.example.gguro.web.controller;
 
 import com.example.gguro.apiPayload.ApiResponse;
 import com.example.gguro.domain.Profile;
+import com.example.gguro.domain.User;
 import com.example.gguro.service.ProfileService.ProfileCommandService;
 import com.example.gguro.web.dto.ProfileRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import static com.example.gguro.jwt.findLoginUser.getCurrentUserId;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +23,9 @@ public class ProfileController {
     @PostMapping("/api/profile/create")
     @Operation(summary = "아이 프로필 생성", description = "아이 프로필을 생성하는 페이지입니다.")
     public ApiResponse<Profile> createProfile(
-            @RequestParam(name = "userId") Long userId,
             @RequestBody ProfileRequestDTO.ProfileDTO request
     ){
-        return ApiResponse.onSuccess(profileCommandService.createProfile(userId, request));
+        User user = getCurrentUserId();
+        return ApiResponse.onSuccess(profileCommandService.createProfile(user, request));
     }
 }

@@ -22,9 +22,9 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
     private final ProfileRepository profileRepository;
 
     @Override
-    public Profile createProfile(Long userId, ProfileRequestDTO.ProfileDTO request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
+    public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
 
         if (user.getProfileList().stream().count() == 4){
             throw new ProfileHandler(ErrorStatus.PROFILE_LIMIT_EXCEEDED);
