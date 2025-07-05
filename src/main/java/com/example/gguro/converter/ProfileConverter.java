@@ -10,7 +10,7 @@ public class ProfileConverter {
         return Profile.builder()
                 .user(user)
                 .name(request.getFirstName()+request.getLastName())
-                .birth(request.getYear()+"-"+request.getMonth()+"-"+request.getDay())
+                .birth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()))
                 .build();
     }
 }
