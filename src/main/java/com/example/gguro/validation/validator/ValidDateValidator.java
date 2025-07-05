@@ -17,7 +17,14 @@ public class ValidDateValidator implements ConstraintValidator<ValidDate, Profil
         }
 
         try {
-            LocalDate.of(dto.getYear(), dto.getMonth(), dto.getDay());
+            LocalDate birthDate = LocalDate.of(dto.getYear(), dto.getMonth(), dto.getDay());
+            LocalDate today = LocalDate.now();
+
+            // 유효한 날짜인지 확인 + 현재보다 미래인지 체크
+            if (birthDate.isAfter(today)) {
+                return false;
+            }
+
             return true;
         } catch (DateTimeException e) {
             return false;

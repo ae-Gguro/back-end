@@ -24,7 +24,6 @@ public class ProfileRequestDTO {
         private String lastName;
 
         @NotNull(message = "생년월일(년도) 작성은 필수입니다.")
-        @Max(value = 2024, message = "년도는 2024년 이전이어야 합니다.")
         private Integer year;
 
         @NotNull(message = "생년월일(월) 작성은 필수입니다.")
