@@ -60,4 +60,14 @@ public class ProfileController {
         profileCommandService.deleteProfile(user, profileId);
         return ApiResponse.onSuccess(null);
     }
+
+    @PatchMapping("/api/profile/{profileId}")
+    @Operation(summary = "아이 프로필 수정", description = "아이 프로필를 수정할 수 있는 페이지입니다.")
+    public ApiResponse<ProfileResponseDTO.ProfileViewDTO> updateProfile(
+            @PathVariable Long profileId,
+            @RequestBody @Valid ProfileRequestDTO.ProfileDTO request
+    ) {
+        User user = getCurrentUser();
+        return ApiResponse.onSuccess(profileCommandService.updateProfile(user, profileId, request));
+    }
 }

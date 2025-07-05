@@ -8,6 +8,7 @@ import com.example.gguro.domain.User;
 import com.example.gguro.repository.ProfileRepository;
 import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.profile.ProfileRequestDTO;
+import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,5 +45,22 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 
         user.removeProfile(profile);
         profileRepository.deleteById(profileId);
+    }
+
+    @Override
+    public ProfileResponseDTO.ProfileViewDTO updateProfile(User user, Long profileId, ProfileRequestDTO.ProfileDTO request) {
+        Profile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND));
+
+        // 해당 프로필이 이 유저의 프로필이 맞는지
+        if(!profile.getUser().equals(user)) {
+            throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
+        }
+
+        profile.setName(request.getFirstName()+request.getLastName());
+        profile.setBirth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()));
+        profileRepository.save(profile);
+
+        return ProfileConverter.getProfile(profile);
     }
 }
