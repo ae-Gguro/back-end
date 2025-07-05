@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.gguro.jwt.FindLoginUser.getCurrentUserId;
+import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class ProfileController {
     public ApiResponse<Profile> createProfile(
             @RequestBody @Valid ProfileRequestDTO.ProfileDTO request
     ){
-        User user = getCurrentUserId();
+        User user = getCurrentUser();
         return ApiResponse.onSuccess(profileCommandService.createProfile(user, request));
     }
 }

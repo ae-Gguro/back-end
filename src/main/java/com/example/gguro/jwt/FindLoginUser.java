@@ -16,7 +16,7 @@ public class FindLoginUser {
     @Autowired
     public FindLoginUser(UserRepository userRepository) { this.userRepository = userRepository; }
 
-    public static User getCurrentUserId() {
+    public static User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UserHandler(ErrorStatus.UNAUTHORIZED);
