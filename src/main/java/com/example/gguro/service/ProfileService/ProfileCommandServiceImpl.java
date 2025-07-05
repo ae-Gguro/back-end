@@ -57,7 +57,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
             throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
         }
 
-        profile.setName(request.getFirstName()+request.getLastName());
+        profile.setName(request.getLastName()+request.getFirstName());
         profile.setBirth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()));
         profileRepository.save(profile);
 
