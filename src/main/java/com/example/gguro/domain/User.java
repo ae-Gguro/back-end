@@ -2,10 +2,14 @@ package com.example.gguro.domain;
 
 import com.example.gguro.domain.common.BaseEntity;
 import com.example.gguro.domain.enums.SocialType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -49,4 +53,13 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "oauth_type", nullable = false)
     private SocialType oauthType;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Profile> profileList = new ArrayList<>();
+
+    public void removeProfile(Profile profile) {
+        profileList.remove(profile);
+        profile.setUser(null);
+    }
 }
