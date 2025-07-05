@@ -1,7 +1,7 @@
 package com.example.gguro.validation.validator;
 
 import com.example.gguro.validation.annotation.ValidDate;
-import com.example.gguro.web.dto.ProfileRequestDTO.ProfileDTO;
+import com.example.gguro.web.dto.profile.ProfileRequestDTO.ProfileDTO;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

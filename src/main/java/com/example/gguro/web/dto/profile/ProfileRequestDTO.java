@@ -1,4 +1,4 @@
-package com.example.gguro.web.dto;
+package com.example.gguro.web.dto.profile;
 
 import com.example.gguro.validation.annotation.ValidDate;
 import jakarta.validation.constraints.Max;
@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.w3c.dom.Text;
 
 public class ProfileRequestDTO {
     @Builder

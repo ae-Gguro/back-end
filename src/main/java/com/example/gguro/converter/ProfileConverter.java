@@ -2,7 +2,10 @@ package com.example.gguro.converter;
 
 import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
-import com.example.gguro.web.dto.ProfileRequestDTO;
+import com.example.gguro.web.dto.profile.ProfileRequestDTO;
+import com.example.gguro.web.dto.profile.ProfileResponseDTO;
+
+import java.time.LocalDate;
 
 public class ProfileConverter {
 
@@ -11,6 +14,13 @@ public class ProfileConverter {
                 .user(user)
                 .name(request.getFirstName()+request.getLastName())
                 .birth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()))
+                .build();
+    }
+
+    public static ProfileResponseDTO.ProfileViewDTO getProfile(Profile profile) {
+        return ProfileResponseDTO.ProfileViewDTO.builder()
+                .profileName(profile.getName())
+                .profileBirthDate(LocalDate.parse(profile.getBirth()))
                 .build();
     }
 }

@@ -7,7 +7,7 @@ import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
 import com.example.gguro.repository.ProfileRepository;
 import com.example.gguro.repository.UserRepository;
-import com.example.gguro.web.dto.ProfileRequestDTO;
+import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

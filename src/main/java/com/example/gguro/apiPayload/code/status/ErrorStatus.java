@@ -45,7 +45,8 @@ public enum ErrorStatus implements BaseErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER4006", "로그인이 필요합니다."),
 
     // Profile 관련 에러
-    PROFILE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "PROFILE4001","프로필은 최대 4개까지 등록할 수 있습니다.");
+    PROFILE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "PROFILE4001","프로필은 최대 4개까지 등록할 수 있습니다."),
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROFILE4002", "프로필이 존재하지 않습니다.");
 
 
 
