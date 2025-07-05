@@ -2,7 +2,6 @@ package com.example.gguro.service.ProfileService;
 
 import com.example.gguro.apiPayload.code.status.ErrorStatus;
 import com.example.gguro.apiPayload.exception.handler.ProfileHandler;
-import com.example.gguro.apiPayload.exception.handler.UserHandler;
 import com.example.gguro.converter.ProfileConverter;
 import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
@@ -26,7 +25,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 //        User user = userRepository.findById(userId)
 //                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
 
-        if (user.getProfileList().stream().count() == 4){
+        if (user.getProfileList().size() == 4){
             throw new ProfileHandler(ErrorStatus.PROFILE_LIMIT_EXCEEDED);
         }
 
