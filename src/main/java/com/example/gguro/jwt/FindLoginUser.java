@@ -22,7 +22,12 @@ public class FindLoginUser {
             throw new UserHandler(ErrorStatus.UNAUTHORIZED);
         }
 
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId;
+        try{
+            userId = Long.parseLong(authentication.getName());
+        } catch (NumberFormatException e) {
+            throw new UserHandler(ErrorStatus.UNAUTHORIZED);
+        }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
     }
