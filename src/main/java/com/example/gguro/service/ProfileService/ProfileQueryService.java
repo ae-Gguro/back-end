@@ -7,4 +7,5 @@ import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 
 public interface ProfileQueryService {
     ProfileResponseDTO.ProfileViewDTO getProfile(User user, Long profileId);
+    ProfileResponseDTO.ProfileListViewDTO getProfileList(User user);
 }

@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
 
 @RestController
@@ -40,5 +42,12 @@ public class ProfileController {
     ){
         User user = getCurrentUser();
         return ApiResponse.onSuccess(profileQueryService.getProfile(user, profileId));
+    }
+
+    @GetMapping("/api/profiles")
+    @Operation(summary = "아이 프로필 리스트 조회", description = "아이 프로필 리스트를 조회할 수 있는 페이지입니다.")
+    public ApiResponse<ProfileResponseDTO.ProfileListViewDTO> getProfiles(){
+        User user = getCurrentUser();
+        return ApiResponse.onSuccess(profileQueryService.getProfileList(user));
     }
 }

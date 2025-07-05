@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ProfileResponseDTO {
 
@@ -16,5 +17,13 @@ public class ProfileResponseDTO {
     public static class ProfileViewDTO {
         private String profileName;
         private LocalDate profileBirthDate;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProfileListViewDTO {
+        List<ProfileViewDTO> profiles;
     }
 }

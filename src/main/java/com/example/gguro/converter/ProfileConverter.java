@@ -6,6 +6,8 @@ import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProfileConverter {
 
@@ -21,6 +23,12 @@ public class ProfileConverter {
         return ProfileResponseDTO.ProfileViewDTO.builder()
                 .profileName(profile.getName())
                 .profileBirthDate(LocalDate.parse(profile.getBirth()))
+                .build();
+    }
+
+    public static ProfileResponseDTO.ProfileListViewDTO getProfileList(List<Profile> profiles) {
+        return ProfileResponseDTO.ProfileListViewDTO.builder()
+                .profiles(profiles.stream().map(ProfileConverter::getProfile).collect(Collectors.toList()))
                 .build();
     }
 }
