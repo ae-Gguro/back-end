@@ -1,5 +1,6 @@
 package com.example.gguro.web.dto;
 
+import com.example.gguro.validation.annotation.ValidDate;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ public class ProfileRequestDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @ValidDate
     public static class ProfileDTO{
         @NotNull(message = "이름(성) 작성은 필수입니다.")
         private String firstName;
