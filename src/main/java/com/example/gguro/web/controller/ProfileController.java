@@ -22,7 +22,7 @@ public class ProfileController {
     private final ProfileCommandService profileCommandService;
 
     @PostMapping("/api/profile/create")
-    @Operation(summary = "아이 프로필 생성", description = "아이 프로필을 생성하는 페이지입니다.")
+    @Operation(summary = "아이 프로필 생성", description = "아이 프로필을 생성하는 페이지입니다.\n"+"생년월일 작성 시 숫자 앞 0은 작성하지 말아주세요. 나쁜 예시 : 2003 04 04")
     public ApiResponse<Profile> createProfile(
             @RequestBody @Valid ProfileRequestDTO.ProfileDTO request
     ){
