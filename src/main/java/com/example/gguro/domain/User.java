@@ -57,4 +57,9 @@ public class User extends BaseEntity {
     @JsonBackReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Profile> profileList = new ArrayList<>();
+
+    public void removeProfile(Profile profile) {
+        profileList.remove(profile);
+        profile.setUser(null);
+    }
 }

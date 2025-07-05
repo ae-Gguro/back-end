@@ -31,4 +31,18 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 
         return profileRepository.save(ProfileConverter.addProfile(user, request));
     }
+
+    @Override
+    public void deleteProfile(User user, Long profileId) {
+        Profile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND));
+
+        // 해당 프로필이 이 유저의 프로필이 맞는지
+        if(!profile.getUser().equals(user)) {
+            throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
+        }
+
+        user.removeProfile(profile);
+        profileRepository.deleteById(profileId);
+    }
 }

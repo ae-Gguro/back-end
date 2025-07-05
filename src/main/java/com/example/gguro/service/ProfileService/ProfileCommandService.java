@@ -6,4 +6,5 @@ import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 
 public interface ProfileCommandService {
     Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request);
+    void deleteProfile(User user, Long profileId);
 }

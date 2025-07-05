@@ -50,4 +50,14 @@ public class ProfileController {
         User user = getCurrentUser();
         return ApiResponse.onSuccess(profileQueryService.getProfileList(user));
     }
+
+    @DeleteMapping("/api/profile/{profileId}")
+    @Operation(summary = "아이 프로필 삭제", description = "아이 프로필을 삭제할 수 있는 페이지입니다.")
+    public ApiResponse<?> deleteProfile(
+            @PathVariable Long profileId
+    ){
+        User user = getCurrentUser();
+        profileCommandService.deleteProfile(user, profileId);
+        return ApiResponse.onSuccess(null);
+    }
 }
