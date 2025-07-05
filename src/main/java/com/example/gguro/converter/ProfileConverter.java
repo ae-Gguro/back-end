@@ -21,6 +21,7 @@ public class ProfileConverter {
 
     public static ProfileResponseDTO.ProfileViewDTO getProfile(Profile profile) {
         return ProfileResponseDTO.ProfileViewDTO.builder()
+                .profileId(profile.getId())
                 .profileName(profile.getName())
                 .profileBirthDate(LocalDate.parse(profile.getBirth()))
                 .build();

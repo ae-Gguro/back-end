@@ -15,6 +15,7 @@ public class ProfileResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ProfileViewDTO {
+        private Long profileId;
         private String profileName;
         private LocalDate profileBirthDate;
     }
