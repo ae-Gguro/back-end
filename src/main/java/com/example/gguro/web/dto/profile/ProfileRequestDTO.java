@@ -16,10 +16,10 @@ public class ProfileRequestDTO {
     @AllArgsConstructor
     @ValidDate
     public static class ProfileDTO{
-        @NotNull(message = "이름(성) 작성은 필수입니다.")
+        @NotNull(message = "이름 작성은 필수입니다.")
         private String firstName;
 
-        @NotNull(message = "이름 작성은 필수입니다.")
+        @NotNull(message = "이름(성) 작성은 필수입니다.")
         private String lastName;
 
         @NotNull(message = "생년월일(년도) 작성은 필수입니다.")
