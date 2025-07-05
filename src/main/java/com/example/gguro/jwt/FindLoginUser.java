@@ -10,11 +10,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class findLoginUser {
+public class FindLoginUser {
     private static UserRepository userRepository;
 
     @Autowired
-    public findLoginUser(UserRepository userRepository) { this.userRepository = userRepository; }
+    public FindLoginUser(UserRepository userRepository) { this.userRepository = userRepository; }
 
     public static User getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
