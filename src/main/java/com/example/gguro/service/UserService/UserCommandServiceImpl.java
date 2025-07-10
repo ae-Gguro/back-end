@@ -65,4 +65,11 @@ public class UserCommandServiceImpl implements UserCommandService{
 
         return UserConverter.toUserLoginResponseDTO(tokenDTO);
     }
+
+    @Override
+    public void deleteUser(User user) {
+        // 프로필까지 삭제됨
+        userRepository.delete(user);
+        // todo:
+    }
 }
