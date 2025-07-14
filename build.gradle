@@ -8,9 +8,14 @@ group = 'com.example'
 version = '1.0.0'
 sourceCompatibility = '17'
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -46,15 +51,6 @@ dependencies {
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
     implementation 'org.springframework.security:spring-security-oauth2-jose:5.7.3'
     implementation 'com.auth0:java-jwt:3.18.2'
-
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/java', 'src/main/resources']
-        }
-    }
 }
 
 tasks.named('test') {
