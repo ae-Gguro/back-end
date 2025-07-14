@@ -39,13 +39,18 @@ jobs:
         run: echo "CurrentTime=${{ steps.current-time.outputs.formattedTime }}"
         shell: bash
 
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
+          chmod 400 ec2-key.pem
+
       - name: Copy .jar to EC2
         run: |
-          scp -i ${{ secrets.EC2_SSH_KEY }} ./build/libs/gguro-1.0.0.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu
+          scp -i ec2-key.pem -o StrictHostKeyChecking=no ./build/libs/gguro-1.0.0.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu
 
       - name: Run app on EC2
         run: |
-          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
             pkill -f 'gguro-1.0.0.jar' || true
             export DB_USERNAME=${{ secrets.DB_USERNAME }}
             export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
