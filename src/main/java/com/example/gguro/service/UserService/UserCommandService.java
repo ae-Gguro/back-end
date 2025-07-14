@@ -10,4 +10,7 @@ public interface UserCommandService {
 
     // 로컬 로그인
     UserResponseDTO.UserLoginResponseDTO login(UserRequestDTO.UserLogInDTO request);
+
+    // 유저 탈퇴
+    void deleteUser(User user);
 }

@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
+import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -73,6 +75,14 @@ public class AuthController {
             @RequestParam(value = "user", required = false) String userJson
     ) {
         return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
+    }
+
+    // 유저 탈퇴
+    @DeleteMapping("/api/auth/delete")
+    public ApiResponse<String> deleteUser(){
+        User user = getCurrentUser();
+        userCommandService.deleteUser(user);
+        return ApiResponse.onSuccess("계정 탈퇴를 성공하였습니다.");
     }
 
 }
