@@ -1,65 +1,55 @@
-name: CI/CD Pipeline
+name: GGURO Dev CI/CD
 
 on:
-  push:
-    branches: [ develop ]  # develop 브랜치에 push가 일어날 때 실행
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
 
     steps:
-      - uses: actions/checkout@v3  # 저장소 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      - name: Set up JDK 17  # Java 개발 킷 설정
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
+          java-version: 17
           distribution: 'temurin'
-          java-version: '17'
 
-      - name: Make application.yml
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Build with Gradle (skip tests)
+        run: ./gradlew clean build -x test
+        shell: bash
+
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00"
+
+      - name: Show current time
+        run: echo "CurrentTime=${{ steps.current-time.outputs.formattedTime }}"
+        shell: bash
+
+      - name: Copy .jar to EC2
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+          scp -i ${{ secrets.EC2_SSH_KEY }} ./build/libs/gguro-1.0.0.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu
 
-      - name: Grant execute permission for gradlew  # gradlew 실행 권한 부여
-        run: chmod +x gradlew
-
-      - name: Build with Gradle  # Gradle을 사용하여 프로젝트 빌드
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build -x test
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gguroServer
-          path: build/libs/*.jar
-
-  deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: gguroServer
-          path: build/libs/
-
-      - name: Deploy to EC2  # EC2에 배포
-        env:
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+      - name: Run app on EC2
         run: |
-          echo "$EC2_SSH_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/umc7thServer.jar
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
-            sleep 10
-            nohup java -jar /home/$EC2_USERNAME/umc7thServer.jar > app.log 2>&1 &  # 새 버전 애플리케이션 실행
-          "
-          rm -f private_key.pem  # 민감한 정보 삭제
+          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
+            pkill -f 'gguro-1.0.0.jar' || true
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export JWT_SECRET=${{ secrets.JWT_SECRET }}
+            export APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+            nohup java -jar /home/ubuntu/gguro-1.0.0.jar --spring.profiles.active=prod > app.log 2>&1 &
+          EOF
