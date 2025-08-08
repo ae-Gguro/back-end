@@ -2,35 +2,45 @@ package com.example.gguro.service.ProfileService;
 
 import com.example.gguro.apiPayload.code.status.ErrorStatus;
 import com.example.gguro.apiPayload.exception.handler.ProfileHandler;
+import com.example.gguro.aws.s3.AmazonS3Manager;
 import com.example.gguro.converter.ProfileConverter;
 import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
+import com.example.gguro.domain.Uuid;
 import com.example.gguro.repository.ProfileRepository;
-import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ProfileCommandServiceImpl implements ProfileCommandService{
 
-    private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
+    private final AmazonS3Manager amazonS3Manager;
 
     @Override
-    public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
+    public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request, MultipartFile image) {
 
         if (user.getProfileList().size() == 4){
             throw new ProfileHandler(ErrorStatus.PROFILE_LIMIT_EXCEEDED);
         }
 
-        return profileRepository.save(ProfileConverter.addProfile(user, request));
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            Uuid uuid = Uuid.create();
+            String keyName = amazonS3Manager.generateProfileImageKeyName(uuid);
+            imageUrl = amazonS3Manager.uploadFile(keyName, image);
+        }
+
+        Profile profile = ProfileConverter.addProfile(user, request);
+        profile.setImageUrl(imageUrl);
+
+        return profileRepository.save(profile);
     }
 
     @Override
@@ -48,7 +58,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
     }
 
     @Override
-    public ProfileResponseDTO.ProfileViewDTO updateProfile(User user, Long profileId, ProfileRequestDTO.ProfileDTO request) {
+    public ProfileResponseDTO.ProfileViewDTO updateProfile(User user, Long profileId, ProfileRequestDTO.ProfileDTO request, MultipartFile image) {
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND));
 
@@ -59,6 +69,14 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 
         profile.setName(request.getLastName()+request.getFirstName());
         profile.setBirth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()));
+
+        if (image != null && !image.isEmpty()) {
+            Uuid uuid = Uuid.create();
+            String keyName = amazonS3Manager.generateProfileImageKeyName(uuid);
+            String imageUrl = amazonS3Manager.uploadFile(keyName, image);
+            profile.setImageUrl(imageUrl);
+        }
+
         profileRepository.save(profile);
 
         return ProfileConverter.getProfile(profile);
