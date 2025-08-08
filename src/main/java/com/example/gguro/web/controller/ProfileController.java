@@ -12,9 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
 
@@ -26,13 +26,14 @@ public class ProfileController {
     private final ProfileCommandService profileCommandService;
     private final ProfileQueryService profileQueryService;
 
-    @PostMapping("/api/profile/create")
+    @PostMapping(value = "/api/profile/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "아이 프로필 생성", description = "아이 프로필을 생성하는 페이지입니다.\n"+"생년월일 작성 시 숫자 앞 0은 작성하지 말아주세요. 나쁜 예시 : 2003 04 04")
     public ApiResponse<Profile> createProfile(
-            @RequestBody @Valid ProfileRequestDTO.ProfileDTO request
+            @RequestPart("request") @Valid ProfileRequestDTO.ProfileDTO request,
+            @RequestPart(required = false) MultipartFile image
     ){
         User user = getCurrentUser();
-        return ApiResponse.onSuccess(profileCommandService.createProfile(user, request));
+        return ApiResponse.onSuccess(profileCommandService.createProfile(user, request, image));
     }
 
     @GetMapping("/api/profile/{profileId}")
@@ -60,14 +61,14 @@ public class ProfileController {
         profileCommandService.deleteProfile(user, profileId);
         return ApiResponse.onSuccess(null);
     }
-
-    @PatchMapping("/api/profile/{profileId}")
+    @PatchMapping(value = "/api/profile/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "아이 프로필 수정", description = "아이 프로필를 수정할 수 있는 페이지입니다.")
     public ApiResponse<ProfileResponseDTO.ProfileViewDTO> updateProfile(
-            @PathVariable Long profileId,
-            @RequestBody @Valid ProfileRequestDTO.ProfileDTO request
+            @RequestPart Long profileId,
+            @RequestPart("request") @Valid ProfileRequestDTO.ProfileDTO request,
+            @RequestPart(required = false) MultipartFile image
     ) {
         User user = getCurrentUser();
-        return ApiResponse.onSuccess(profileCommandService.updateProfile(user, profileId, request));
+        return ApiResponse.onSuccess(profileCommandService.updateProfile(user, profileId, request, image));
     }
 }
