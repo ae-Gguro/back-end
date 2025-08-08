@@ -56,5 +56,7 @@ jobs:
             export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             export JWT_SECRET=${{ secrets.JWT_SECRET }}
             export APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+            export S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
+            export S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
             nohup java -jar /home/ubuntu/gguro-1.0.0.jar --spring.profiles.active=prod > app.log 2>&1 &
           EOF
