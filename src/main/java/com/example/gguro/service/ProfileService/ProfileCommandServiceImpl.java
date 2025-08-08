@@ -8,7 +8,6 @@ import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
 import com.example.gguro.domain.Uuid;
 import com.example.gguro.repository.ProfileRepository;
-import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 import jakarta.transaction.Transactional;
@@ -21,14 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class ProfileCommandServiceImpl implements ProfileCommandService{
 
-    private final UserRepository userRepository;
     private final ProfileRepository profileRepository;
     private final AmazonS3Manager amazonS3Manager;
 
     @Override
     public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request, MultipartFile image) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserHandler(ErrorStatus.USER_NOT_FOUND));
 
         if (user.getProfileList().size() == 4){
             throw new ProfileHandler(ErrorStatus.PROFILE_LIMIT_EXCEEDED);
