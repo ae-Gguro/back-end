@@ -26,7 +26,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
     @Override
     public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request, MultipartFile image) {
 
-        if (user.getProfileList().size() == 4){
+        if (user.getProfileList().size() == 3){
             throw new ProfileHandler(ErrorStatus.PROFILE_LIMIT_EXCEEDED);
         }
 
