@@ -61,10 +61,10 @@ public class ProfileController {
         profileCommandService.deleteProfile(user, profileId);
         return ApiResponse.onSuccess(null);
     }
-    @PatchMapping(value = "/api/profile/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/api/profile/{profileId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "아이 프로필 수정", description = "아이 프로필를 수정할 수 있는 페이지입니다.")
     public ApiResponse<ProfileResponseDTO.ProfileViewDTO> updateProfile(
-            @RequestPart Long profileId,
+            @PathVariable Long profileId,
             @RequestPart("request") @Valid ProfileRequestDTO.ProfileDTO request,
             @RequestPart(required = false) MultipartFile image
     ) {
