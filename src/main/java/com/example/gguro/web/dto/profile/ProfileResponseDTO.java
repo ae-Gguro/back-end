@@ -18,6 +18,7 @@ public class ProfileResponseDTO {
         private Long profileId;
         private String profileName;
         private LocalDate profileBirthDate;
+        private String profileImageUrl;
     }
 
     @Builder
