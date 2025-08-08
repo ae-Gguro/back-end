@@ -24,6 +24,7 @@ public class ProfileConverter {
                 .profileId(profile.getId())
                 .profileName(profile.getName())
                 .profileBirthDate(LocalDate.parse(profile.getBirth()))
+                .profileImageUrl(profile.getImageUrl())
                 .build();
     }
 
