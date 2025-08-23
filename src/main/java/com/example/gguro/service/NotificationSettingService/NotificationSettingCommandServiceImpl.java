@@ -46,7 +46,7 @@ public class NotificationSettingCommandServiceImpl implements NotificationSettin
     }
 
     @Override
-    public void upateNotificationSetting(User user, Long profileId, NotificationSettingRequestDTO request) {
+    public void updateNotificationSetting(User user, Long profileId, NotificationSettingRequestDTO request) {
         Profile profile = profileRepository.findById(profileId)
                 .orElseThrow(() -> new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND));
 

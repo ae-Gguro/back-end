@@ -30,7 +30,7 @@ public class NotificationSettingController {
             @RequestBody NotificationSettingRequestDTO request
     ) {
         User user = getCurrentUser();
-        notificationSettingCommandService.upateNotificationSetting(user, profileId, request);
+        notificationSettingCommandService.updateNotificationSetting(user, profileId, request);
         return ApiResponse.onSuccess("성공적으로 알림 세팅이 변경되었습니다.");
     }
 

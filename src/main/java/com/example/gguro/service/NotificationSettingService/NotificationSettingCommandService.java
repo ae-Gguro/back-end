@@ -10,6 +10,6 @@ public interface NotificationSettingCommandService {
     void createDefaultSettings(Profile profile);
 
     // 알림 온오프 세팅
-    void upateNotificationSetting(User user, Long profileId, NotificationSettingRequestDTO notificationSettingRequestDTO);
+    void updateNotificationSetting(User user, Long profileId, NotificationSettingRequestDTO notificationSettingRequestDTO);
 
 }
