@@ -71,4 +71,22 @@ public class ProfileController {
         User user = getCurrentUser();
         return ApiResponse.onSuccess(profileCommandService.updateProfile(user, profileId, request, image));
     }
+
+    @GetMapping("/api/profile/first-name/possessive/{profileId}")
+    @Operation(summary = "해당 프로필의 이름(소유격)을 반환 (예: 00아/00야)", description = "해당 프로필의 이름을 조회할 수 있습니다.")
+    public ApiResponse<String> getProfileFirstNamePossessiveMarker(
+            @PathVariable Long profileId
+    ) {
+        User user = getCurrentUser();
+        return ApiResponse.onSuccess(profileQueryService.getProfileFirstNamePossessiveMarker(user, profileId));
+    }
+
+    @GetMapping("/api/profile/first-name/nominative/{profileId}")
+    @Operation(summary = "해당 프로필의 이름(주격)을 반환 (예: 00가/00이가)", description = "해당 프로필의 이름을 조회할 수 있습니다.")
+    public ApiResponse<String> getProfileFirstNameNominativeCaseMarker(
+            @PathVariable Long profileId
+    ) {
+        User user = getCurrentUser();
+        return ApiResponse.onSuccess(profileQueryService.getProfileFirstNameNominativeCaseMarker(user, profileId));
+    }
 }
