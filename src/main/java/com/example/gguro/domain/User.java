@@ -58,6 +58,9 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Profile> profileList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Device> devices = new ArrayList<>();
+
     public void removeProfile(Profile profile) {
         profileList.remove(profile);
         profile.setUser(null);
