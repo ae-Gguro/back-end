@@ -1,7 +1,6 @@
 package com.example.gguro.domain;
 
 import com.example.gguro.domain.common.BaseEntity;
-import com.example.gguro.domain.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,7 +1,6 @@
 package com.example.gguro.converter;
 
 import com.example.gguro.domain.NotificationSetting;
-import com.example.gguro.web.dto.notificationSetting.NotificationSettingRequestDTO;
 import com.example.gguro.web.dto.notificationSetting.NotificationSettingResponseDTO;
 
 public class NotificationSettingConverter {
