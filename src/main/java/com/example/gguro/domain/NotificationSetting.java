@@ -16,8 +16,8 @@ public class NotificationSetting extends BaseEntity {
     private Long id;
 
     // 알림 설정은 프로필 단위로
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", nullable = false, unique = true)
     private Profile profile;
 
     private boolean allNotificationsEnabled;
