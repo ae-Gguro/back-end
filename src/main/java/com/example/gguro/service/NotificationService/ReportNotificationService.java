@@ -48,14 +48,14 @@ public class ReportNotificationService {
 
                 sendToDevices(user, profile,
                         "꾸로",
-                        "🔔 띵동! 오늘의 리포트가 도착했어요.",
+                        "🔔 띵동! " +getVocativeName(profile.getFirstName())+ "오늘 리포트가 도착했어요.",
                         NotificationType.DAILY_REPORT);
             }
         }
     }
 
     // 매주 일요일 22시 알림
-    @Scheduled(cron = "0 0 22 * * SUN", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 28 3 * * *", zone = "Asia/Seoul")
     public void sendWeeklyReportReminder() {
         List<User> users = userRepository.findAllWithProfilesAndSettings();
 
@@ -75,7 +75,7 @@ public class ReportNotificationService {
 
                 sendToDevices(user, profile,
                         "꾸로",
-                        "🔔 띵동! 지난 주의 리포트가 도착했어요.",
+                        "🔔 띵동! " +getVocativeName(profile.getFirstName())+"지난 주 리포트가 도착했어요.",
                         NotificationType.WEEKLY_REPORT);
             }
         }
@@ -104,6 +104,25 @@ public class ReportNotificationService {
                 log.warn("{} 알림 발송 안됨: 유효하지 않은 토큰. userId={}, profileId={}, token={}",
                         type.name(), user.getId(), profile.getId(), token);
             }
+        }
+    }
+
+    private String getVocativeName(String name) {
+        if (name == null || name.isEmpty()) return "";
+
+        char lastChar = name.charAt(name.length() - 1);
+        // 한글 범위 (가 ~ 힣)
+        if (lastChar < 0xAC00 || lastChar > 0xD7A3) {
+            return name; // 한글 아님 → 그대로 반환
+        }
+
+        int code = lastChar - 0xAC00;
+        int jong = code % 28; // 종성(받침)
+
+        if (jong == 0) {
+            return name + "의 "; // 받침 없음
+        } else {
+            return name + "이의 "; // 받침 있음
         }
     }
 }

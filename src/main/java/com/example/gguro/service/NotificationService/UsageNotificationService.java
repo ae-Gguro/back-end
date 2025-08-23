@@ -107,7 +107,7 @@ public class UsageNotificationService {
         String title = "꾸로";
 
         // 이름 + 아/야 처리
-        String vocative = getVocativeName(profile.getName());
+        String vocative = getVocativeName(profile.getFirstName());
 
         // 랜덤 멘트 후보
         List<String> messages = List.of(

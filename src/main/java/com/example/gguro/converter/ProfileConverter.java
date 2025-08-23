@@ -15,6 +15,8 @@ public class ProfileConverter {
         return Profile.builder()
                 .user(user)
                 .name(request.getLastName()+request.getFirstName())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .birth(String.format("%d-%02d-%02d", request.getYear(), request.getMonth(), request.getDay()))
                 .build();
     }
