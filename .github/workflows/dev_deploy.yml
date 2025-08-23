@@ -28,17 +28,6 @@ jobs:
         run: ./gradlew clean build -x test
         shell: bash
 
-      - name: Get current time
-        uses: 1466587594/get-current-time@v2
-        id: current-time
-        with:
-          format: YYYY-MM-DDTHH-mm-ss
-          utcOffset: "+09:00"
-
-      - name: Show current time
-        run: echo "CurrentTime=${{ steps.current-time.outputs.formattedTime }}"
-        shell: bash
-
       - name: Create SSH key file
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
@@ -46,17 +35,24 @@ jobs:
 
       - name: Copy .jar to EC2
         run: |
-          scp -i ec2-key.pem -o StrictHostKeyChecking=no ./build/libs/gguro-1.0.0.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu
+          scp -i ec2-key.pem -o StrictHostKeyChecking=no ./build/libs/gguro-1.0.0.jar \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
 
-      - name: Run app on EC2
+      - name: Update env file & restart service
         run: |
           ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
-            pkill -f 'gguro-1.0.0.jar' || true
-            export DB_USERNAME=${{ secrets.DB_USERNAME }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export JWT_SECRET=${{ secrets.JWT_SECRET }}
-            export APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
-            export S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
-            export S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
-            nohup java -jar /home/ubuntu/gguro-1.0.0.jar --spring.profiles.active=prod > app.log 2>&1 &
+            # app.env 업데이트
+            cat > /home/ubuntu/gguro/app.env <<EOL
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+            S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
+            S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+          EOL
+
+            # 서비스 재시작
+            sudo systemctl daemon-reload
+            sudo systemctl restart gguro
+            sudo systemctl enable gguro
           EOF
