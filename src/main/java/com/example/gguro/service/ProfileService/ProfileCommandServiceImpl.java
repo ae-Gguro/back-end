@@ -8,6 +8,7 @@ import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
 import com.example.gguro.domain.Uuid;
 import com.example.gguro.repository.ProfileRepository;
+import com.example.gguro.service.NotificationSettingService.NotificationSettingCommandService;
 import com.example.gguro.web.dto.profile.ProfileRequestDTO;
 import com.example.gguro.web.dto.profile.ProfileResponseDTO;
 import jakarta.transaction.Transactional;
@@ -22,6 +23,7 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 
     private final ProfileRepository profileRepository;
     private final AmazonS3Manager amazonS3Manager;
+    private final NotificationSettingCommandService notificationSettingCommandService;
 
     @Override
     public Profile createProfile(User user, ProfileRequestDTO.ProfileDTO request, MultipartFile image) {
@@ -39,8 +41,11 @@ public class ProfileCommandServiceImpl implements ProfileCommandService{
 
         Profile profile = ProfileConverter.addProfile(user, request);
         profile.setImageUrl(imageUrl);
+        profileRepository.save(profile);
 
-        return profileRepository.save(profile);
+        notificationSettingCommandService.createDefaultSettings(profile);
+
+        return profile;
     }
 
     @Override
