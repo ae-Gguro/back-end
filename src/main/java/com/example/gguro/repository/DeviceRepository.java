@@ -13,4 +13,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findByUserAndToken(User user, String token);
 
     List<Device> findAllByUser(User member);
+
+    List<Device> findByUserAndIsActiveTrue(User user);
 }
