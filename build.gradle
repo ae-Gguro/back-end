@@ -22,20 +22,30 @@ dependencies {
     // Spring Boot 기본
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // 데이터베이스 드라이버
+    // Spring Boot가 버전을 관리하지 않으므로 명시적으로 지정해야 합니다.
     implementation 'mysql:mysql-connector-java:8.0.33'
-    implementation 'org.hibernate.orm:hibernate-core'
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations'
-    implementation 'com.fasterxml.jackson.core:jackson-core'
+
+    // Hibernate
+    // Spring Boot Starter에 포함되어 있으므로 별도 명시 불필요
+    // implementation 'org.hibernate.orm:hibernate-core'
+
+    // Jackson
+    // Spring Boot Starter에 포함되어 있으므로 별도 명시 불필요
+    // implementation 'com.fasterxml.jackson.core:jackson-databind'
+    // implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    // implementation 'com.fasterxml.jackson.core:jackson-core'
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // Swagger
+    // Spring Boot가 호환되는 버전을 관리해 줍니다.
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
     // Security
@@ -44,21 +54,29 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
 
     // JWT
+    // Spring Boot가 버전을 관리해 줍니다.
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // WebFlux
+    // Spring Boot가 버전을 관리해 줍니다.
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // Apple Login
     implementation 'com.nimbusds:nimbus-jose-jwt:9.30.1'
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
-    implementation 'org.springframework.security:spring-security-oauth2-jose'
     implementation 'com.auth0:java-jwt:3.18.2'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
 
     // AWS S3
-    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // Spring Boot 3.x와 호환되지 않는 오래된 라이브러리입니다.
+    // AWS SDK for Java v2로 마이그레이션해야 합니다.
+    // 아래 라이브러리는 삭제를 권장합니다.
+     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // 대신 아래와 같이 AWS SDK v2를 직접 사용하는 것이 좋습니다.
+    // implementation platform('software.amazon.awssdk:bom:2.25.7')
+    // implementation 'software.amazon.awssdk:s3'
 
     // Firebase
     implementation 'com.google.firebase:firebase-admin:9.5.0'
