@@ -46,8 +46,12 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Profile 관련 에러
     PROFILE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "PROFILE4001","프로필은 최대 3개까지 등록할 수 있습니다."),
-    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROFILE4002", "프로필이 존재하지 않습니다.");
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROFILE4002", "프로필이 존재하지 않습니다."),
 
+    // NotificationSetting 관련 에러
+    NOTIFICATION_SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION_SETTING4001", "알림 세팅 내역이 존재하지 않습니다."),
+    ALL_NOTIFICATION_DISABLED(HttpStatus.BAD_REQUEST, "NOTIFICATION_SETTING4002", "전체 알림이 꺼져 있을 때는 개별 알림을 변경할 수 없습니다."),
+    INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTIFICATION_SETTING4003", "잘못된 알림 타입입니다.");
 
 
     private final HttpStatus httpStatus;
