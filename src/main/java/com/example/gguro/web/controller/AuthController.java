@@ -49,7 +49,7 @@ public class AuthController {
     }
 
     // AccessToken 재발급
-    @PostMapping("/reissue")
+    @PostMapping("/api/auth/reissue")
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> reissueToken(
             @RequestHeader("RefreshToken") String refreshToken
     ) {
