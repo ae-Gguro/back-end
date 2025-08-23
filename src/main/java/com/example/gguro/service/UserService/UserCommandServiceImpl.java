@@ -9,6 +9,7 @@ import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.TokenDTO;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -64,6 +65,24 @@ public class UserCommandServiceImpl implements UserCommandService{
         TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
 
         return UserConverter.toUserLoginResponseDTO(tokenDTO);
+    }
+
+    @Override
+    public UserResponseDTO.UserLoginResponseDTO reissueToken(String refreshToken) {
+        try {
+            // RefreshToken 검증
+            tokenProvider.validateRefreshToken(refreshToken);
+
+            // 새 AccessToken + RefreshToken 발급
+            TokenDTO tokenDTO = tokenProvider.reissueToken(refreshToken);
+
+            return UserConverter.toUserLoginResponseDTO(tokenDTO);
+
+        } catch (ExpiredJwtException eje) {
+            throw new UserHandler(ErrorStatus.TOKEN_EXPIRED);
+        } catch (IllegalArgumentException iae) {
+            throw new UserHandler(ErrorStatus.INVALID_TOKEN);
+        }
     }
 
     @Override
