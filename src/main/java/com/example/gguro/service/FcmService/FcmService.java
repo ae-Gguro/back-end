@@ -2,12 +2,14 @@ package com.example.gguro.service.FcmService;
 
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.google.firebase.messaging.MessagingErrorCode;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FcmService {
@@ -24,9 +26,9 @@ public class FcmService {
 
         try {
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("푸시 알림 성공: "+response);
+            log.info("푸시 알림 성공: {}", response);
         } catch (FirebaseMessagingException e) {
-            System.err.println("푸시 알림 실패: "+e.getMessage());
+            log.error("푸시 알림 실패: {}", e.getMessage(), e);
         }
     }
 
@@ -41,14 +43,13 @@ public class FcmService {
                     .build();
 
             FirebaseMessaging.getInstance().send(message);
-            System.out.println("토큰 유효성 검사 성공: "+token);
+            log.debug("토큰 유효성 검사 성공: {}", token);
             return true;
         } catch (FirebaseMessagingException e) {
-            System.err.println("토큰 유효성 검사 실패: "+token);
-            System.out.println("이유: "+e.getMessage());
+            log.warn("토큰 유효성 검사 실패: token={}, 이유={}", token, e.getMessage());
 
             if (e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
-                System.err.println("토큰 형식이 유효하지 않습니다.");
+                log.error("토큰 형식이 유효하지 않습니다: {}", token);
             }
             return false;
         }
