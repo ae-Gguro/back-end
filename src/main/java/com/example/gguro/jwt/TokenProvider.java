@@ -99,6 +99,29 @@ public class TokenProvider {
         return false;
     }
 
+    // RefreshToken 검증
+    public void validateRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw e;
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("유효하지 않은 RefreshToken", e);
+        }
+    }
+
+    // RefreshToken 기반 재발급
+    public TokenDTO reissueToken(String refreshToken) {
+        Claims claims = parseClaims(refreshToken);
+        String userId = claims.getSubject();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        return generateTokenDto(authentication);
+    }
+
     private Claims parseClaims(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build()
