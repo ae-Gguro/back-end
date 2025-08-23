@@ -53,7 +53,7 @@ public class ProfileQueryServiceImpl  implements ProfileQueryService {
             throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
         }
 
-        return getVocativeNameNominativeCaseMarker(profile.getFirstName());
+        return getVocativeNamePossessiveMarker(profile.getFirstName());
     }
 
     @Override
@@ -66,7 +66,7 @@ public class ProfileQueryServiceImpl  implements ProfileQueryService {
             throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
         }
 
-        return getVocativeNamePossessiveMarker(profile.getFirstName());
+        return getVocativeNameNominativeCaseMarker(profile.getFirstName());
     }
 
     // 소유격 조사
