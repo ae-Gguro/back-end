@@ -19,7 +19,7 @@ public class Device extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String token;
 
     @Column(name = "device_type", nullable = false, length = 20)
