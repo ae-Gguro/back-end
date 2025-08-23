@@ -128,7 +128,7 @@ public class UsageNotificationService {
                             user.getId(), profile.getId(), token, body);
                 } else {
                     log.warn("USAGE_REMINDER 알림 발송 안됨: 유효하지 않은 토큰. userId={}, profileId={}, token={}, body={}",
-                            user.getId(), profile.getId(), token);
+                            user.getId(), profile.getId(), token, body);
                 }
             }
         }
