@@ -23,6 +23,14 @@ public class Profile extends BaseEntity {
     @Column(name = "profile_name")
     private String name;
 
+    // 이름
+    @Column(name = "profile_first_name")
+    private String firstName;
+
+    // 성
+    @Column(name = "profile_last_name")
+    private String lastName;
+
     @Column(name = "profile_birth")
     private String birth;
 
