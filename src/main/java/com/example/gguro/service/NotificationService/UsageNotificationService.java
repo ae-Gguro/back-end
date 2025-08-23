@@ -50,7 +50,7 @@ public class UsageNotificationService {
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String CHECK_TODAY_URL = "http://localhost:8000/api/chatrooms/check-today/";
 
-    @Scheduled(cron = "0 1 13,0 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 13,18 * * *", zone = "Asia/Seoul")
     public void sendChatroomUsageReminder() {
         List<User> users = userRepository.findAll();
 

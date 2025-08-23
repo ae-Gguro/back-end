@@ -30,7 +30,7 @@ public class ReportNotificationService {
     private final FcmService fcmService;
 
     // 매일 10:00 알림
-    @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
     public void sendDailyReportReminder() {
         List<User> users = userRepository.findAllWithProfilesAndSettings();
 
