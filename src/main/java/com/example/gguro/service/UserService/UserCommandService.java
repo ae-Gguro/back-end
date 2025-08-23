@@ -13,4 +13,7 @@ public interface UserCommandService {
 
     // 유저 탈퇴
     void deleteUser(User user);
+
+    // 토큰 재발급
+    UserResponseDTO.UserLoginResponseDTO reissueToken(String refreshToken);
 }

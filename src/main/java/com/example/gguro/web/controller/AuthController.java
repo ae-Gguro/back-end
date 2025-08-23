@@ -8,20 +8,14 @@ import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
-import com.example.gguro.web.dto.apple.AppleLoginRequest;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
 
@@ -52,6 +46,14 @@ public class AuthController {
             @RequestBody @Valid UserRequestDTO.UserLogInDTO request
     ){
         return ApiResponse.onSuccess(userCommandService.login(request));
+    }
+
+    // AccessToken 재발급
+    @PostMapping("/api/auth/reissue")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> reissueToken(
+            @RequestHeader("RefreshToken") String refreshToken
+    ) {
+        return ApiResponse.onSuccess(userCommandService.reissueToken(refreshToken));
     }
 
     // 카카오 로그인

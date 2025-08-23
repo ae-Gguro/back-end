@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -53,6 +51,7 @@ public class TokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setSubject(authentication.getPrincipal().toString())
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -97,6 +96,29 @@ public class TokenProvider {
             log.error("JWT 토큰이 잘못되었습니다.");
         }
         return false;
+    }
+
+    // RefreshToken 검증
+    public void validateRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw e;
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("유효하지 않은 RefreshToken", e);
+        }
+    }
+
+    // RefreshToken 기반 재발급
+    public TokenDTO reissueToken(String refreshToken) {
+        Claims claims = parseClaims(refreshToken);
+        String userId = claims.getSubject();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        return generateTokenDto(authentication);
     }
 
     private Claims parseClaims(String token) {
