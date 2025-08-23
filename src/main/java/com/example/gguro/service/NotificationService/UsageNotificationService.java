@@ -1,7 +1,5 @@
 package com.example.gguro.service.NotificationService;
 
-import com.example.gguro.apiPayload.code.status.ErrorStatus;
-import com.example.gguro.apiPayload.exception.handler.NotificationSettingHandler;
 import com.example.gguro.domain.Device;
 import com.example.gguro.domain.NotificationSetting;
 import com.example.gguro.domain.Profile;
@@ -60,12 +58,18 @@ public class UsageNotificationService {
             for (Profile profile : profiles) {
                 // 1. 알림 설정 체크 (프로필별 USAGE_REMINDER on 여부)
                 NotificationSetting setting = notificationSettingRepository.findByProfile(profile)
-                        .orElseThrow(() -> new NotificationSettingHandler(ErrorStatus.NOTIFICATION_SETTING_NOT_FOUND));
+                        .orElse(null);
+
+                if (setting == null) {
+                    log.error("알림 설정이 없습니다: profileId={}", profile.getId());
+                    continue;
+                }
 
                 if (!setting.isUsageNotificationEnabled()) {
                     log.debug("USAGE_REMINDER 꺼져있음 → skip, profileId={}", profile.getId());
                     continue;
                 }
+
                 log.debug("USAGE_REMINDER 켜져있음, profileId={}", profile.getId());
 
                 // 2. 오늘 채팅방 생성 여부 확인

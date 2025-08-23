@@ -1,7 +1,5 @@
 package com.example.gguro.service.NotificationService;
 
-import com.example.gguro.apiPayload.code.status.ErrorStatus;
-import com.example.gguro.apiPayload.exception.handler.NotificationSettingHandler;
 import com.example.gguro.domain.Device;
 import com.example.gguro.domain.NotificationSetting;
 import com.example.gguro.domain.Profile;
@@ -37,9 +35,11 @@ public class ReportNotificationService {
         for (User user : users) {
             for (Profile profile : user.getProfileList()) {
                 NotificationSetting setting = profile.getNotificationSetting();
+
                 if (setting == null) {
-                    throw new NotificationSettingHandler(ErrorStatus.NOTIFICATION_SETTING_NOT_FOUND);
-                }
+                    log.error("알림 설정이 없습니다: profileId={}", profile.getId());
+                    continue;
+               }
 
                 if (!setting.isDailyNotificationEnabled()) {
                     log.debug("DailyReportReminder 꺼져있음 → skip, profileId={}", profile.getId());
@@ -62,8 +62,10 @@ public class ReportNotificationService {
         for (User user : users) {
             for (Profile profile : user.getProfileList()) {
                 NotificationSetting setting = profile.getNotificationSetting();
+
                 if (setting == null) {
-                    throw new NotificationSettingHandler(ErrorStatus.NOTIFICATION_SETTING_NOT_FOUND);
+                    log.error("알림 설정이 없습니다: profileId={}", profile.getId());
+                    continue;
                 }
 
                 if (!setting.isWeeklyNotificationEnabled()) {
