@@ -22,11 +22,47 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-        shell: bash
+
+      # application-prod.yml 생성
+      - name: Create application-prod.yml
+        run: |
+          mkdir -p src/main/resources
+          cat > src/main/resources/application-prod.yml <<'EOL'
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://localhost:3306/gguro
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: never
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+        hbm2ddl:
+          auto: update
+        default_batch_fetch_size: 1000
+
+server:
+  port: 443
+  ssl:
+    enabled: true
+    key-store: /opt/gguro/keystore.p12
+    key-store-password: gguro1234
+    key-store-type: PKCS12
+    key-alias: springboot-cert
+EOL
 
       - name: Build with Gradle (skip tests)
         run: ./gradlew clean build -x test
-        shell: bash
 
       - name: Create SSH key file
         run: |
@@ -40,19 +76,17 @@ jobs:
 
       - name: Update env file & restart service
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
-            # app.env 업데이트
-            cat > /home/ubuntu/gguro/app.env <<EOL
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
-            S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
-            S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
-          EOL
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<'EOL'
+cat > /home/ubuntu/gguro/app.env <<EOF
+DB_USERNAME=${{ secrets.DB_USERNAME }}
+DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
+S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+EOF
 
-            # 서비스 재시작
-            sudo systemctl daemon-reload
-            sudo systemctl restart gguro
-            sudo systemctl enable gguro
-          EOF
+sudo systemctl daemon-reload
+sudo systemctl restart gguro
+sudo systemctl enable gguro
+EOL
