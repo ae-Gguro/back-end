@@ -26,38 +26,38 @@ jobs:
       - name: Create application-prod.yml
         run: |
           mkdir -p src/main/resources
-          cat > src/main/resources/application-prod.yml <<  EOF
-spring:
-  config:
-    activate:
-      on-profile: prod
-  datasource:
-    url: jdbc:mysql://localhost:3306/gguro
-    username: \${DB_USERNAME}
-    password: \${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  sql:
-    init:
-      mode: never
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        show_sql: false
-        format_sql: false
-        use_sql_comments: false
-        hbm2ddl:
-          auto: update
-        default_batch_fetch_size: 1000
+          echo "spring:" > src/main/resources/application-prod.yml
+          echo "  config:" >> src/main/resources/application-prod.yml
+          echo "    activate:" >> src/main/resources/application-prod.yml
+          echo "      on-profile: prod" >> src/main/resources/application-prod.yml
+          echo "  datasource:" >> src/main/resources/application-prod.yml
+          echo "    url: jdbc:mysql://localhost:3306/gguro" >> src/main/resources/application-prod.yml
+          echo "    username: \${DB_USERNAME}" >> src/main/resources/application-prod.yml
+          echo "    password: \${DB_PASSWORD}" >> src/main/resources/application-prod.yml
+          echo "    driver-class-name: com.mysql.cj.jdbc.Driver" >> src/main/resources/application-prod.yml
+          echo "  sql:" >> src/main/resources/application-prod.yml
+          echo "    init:" >> src/main/resources/application-prod.yml
+          echo "      mode: never" >> src/main/resources/application-prod.yml
+          echo "  jpa:" >> src/main/resources/application-prod.yml
+          echo "    properties:" >> src/main/resources/application-prod.yml
+          echo "      hibernate:" >> src/main/resources/application-prod.yml
+          echo "        dialect: org.hibernate.dialect.MySQL8Dialect" >> src/main/resources/application-prod.yml
+          echo "        show_sql: false" >> src/main/resources/application-prod.yml
+          echo "        format_sql: false" >> src/main/resources/application-prod.yml
+          echo "        use_sql_comments: false" >> src/main/resources/application-prod.yml
+          echo "        hbm2ddl:" >> src/main/resources/application-prod.yml
+          echo "          auto: update" >> src/main/resources/application-prod.yml
+          echo "        default_batch_fetch_size: 1000" >> src/main/resources/application-prod.yml
+          echo "" >> src/main/resources/application-prod.yml
+          echo "server:" >> src/main/resources/application-prod.yml
+          echo "  port: 443" >> src/main/resources/application-prod.yml
+          echo "  ssl:" >> src/main/resources/application-prod.yml
+          echo "    enabled: true" >> src/main/resources/application-prod.yml
+          echo "    key-store: /opt/gguro/keystore.p12" >> src/main/resources/application-prod.yml
+          echo "    key-store-password: gguro1234" >> src/main/resources/application-prod.yml
+          echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
+          echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
 
-server:
-  port: 443
-  ssl:
-    enabled: true
-    key-store: /opt/gguro/keystore.p12
-    key-store-password: gguro1234
-    key-store-type: PKCS12
-    key-alias: springboot-cert
       - name: Build with Gradle (skip tests)
         run: ./gradlew clean build -x test
 
@@ -73,17 +73,15 @@ server:
 
       - name: Update env file & restart service
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
-            cat > /home/ubuntu/gguro/app.env <<EOL
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
-            S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
-            S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
-          EOL
-            
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
+            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > /home/ubuntu/gguro/app.env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> /home/ubuntu/gguro/app.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/gguro/app.env
+            echo "APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}" >> /home/ubuntu/gguro/app.env
+            echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> /home/ubuntu/gguro/app.env
+            echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> /home/ubuntu/gguro/app.env
+
             sudo systemctl daemon-reload
             sudo systemctl restart gguro
             sudo systemctl enable gguro
-          EOF
+          CMD
