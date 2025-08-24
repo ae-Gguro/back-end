@@ -69,7 +69,7 @@ jobs:
       - name: Copy .jar to EC2
         run: |
           scp -i ec2-key.pem -o StrictHostKeyChecking=no ./build/libs/gguro-1.0.0.jar \
-          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/gguro.jar
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/gguro-1.0.0.jar
 
       - name: Update env file & restart service
         run: |
