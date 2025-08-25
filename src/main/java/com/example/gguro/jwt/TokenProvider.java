@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import com.example.gguro.web.dto.TokenDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -128,5 +129,34 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    // 헤더에서 토큰 추출
+    public String resolveAccessToken(HttpServletRequest request) {
+
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return null;
+        }
+
+        return header.split(" ")[1];
+    }
+
+    public long getRemainingExpiration(String token) {
+        try {
+            Date expiration = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+            return expiration.getTime() - System.currentTimeMillis();
+        } catch (ExpiredJwtException e) {
+            return 0;
+        }
+    }
+
+    public String getUserIdFromToken(String token) {
+        return parseClaims(token).getSubject();
     }
 }

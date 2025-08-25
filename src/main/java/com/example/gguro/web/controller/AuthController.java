@@ -12,6 +12,7 @@ import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,16 @@ public class AuthController {
             @RequestParam(value = "user", required = false) String userJson
     ) {
         return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
+    }
+
+    // 유저 로그아웃
+    @PostMapping("/api/auth/logout")
+    public ApiResponse<String> logout(
+            HttpServletRequest request,
+            String deviceToken
+    ) {
+        userCommandService.logout(request, deviceToken);
+        return ApiResponse.onSuccess("로그아웃 되었습니다.");
     }
 
     // 유저 탈퇴

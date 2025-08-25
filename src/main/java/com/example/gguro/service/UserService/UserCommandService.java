@@ -3,6 +3,7 @@ package com.example.gguro.service.UserService;
 import com.example.gguro.domain.User;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface UserCommandService {
     // 로컬 회원가입
@@ -16,4 +17,7 @@ public interface UserCommandService {
 
     // 토큰 재발급
     UserResponseDTO.UserLoginResponseDTO reissueToken(String refreshToken);
+
+    // 유저 로그아웃
+    void logout(HttpServletRequest request, String deviceToken);
 }
