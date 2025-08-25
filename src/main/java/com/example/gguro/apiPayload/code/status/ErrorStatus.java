@@ -44,6 +44,7 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "USER4005", "유효하지 않은 토큰입니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER4006", "로그인이 필요합니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "USER4007", "토큰이 만료되었습니다."),
+    LOGOUT_TOKEN(HttpStatus.BAD_REQUEST, "USER4008", "이미 로그아웃된 토큰입니다."),
 
     // Profile 관련 에러
     PROFILE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "PROFILE4001","프로필은 최대 3개까지 등록할 수 있습니다."),
