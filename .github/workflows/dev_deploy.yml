@@ -43,12 +43,15 @@ jobs:
             echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
             echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
 
-      # Firebase 키 파일 생성 (bootJar 전에 실행)
+      # ✅ Firebase 키 생성 (cat <<EOF 사용)
       - name: Create Firebase key
         run: |
           mkdir -p src/main/resources/firebase
-          echo "${{ secrets.FIREBASE_KEY_JSON }}" > src/main/resources/firebase/serviceAccountKey.json
-          ls -al src/main/resources/firebase  # (옵션) 생성 확인 로그
+          cat > src/main/resources/firebase/serviceAccountKey.json << 'EOF'
+          ${{ secrets.FIREBASE_KEY_JSON }}
+          EOF
+          echo "[INFO] Firebase serviceAccountKey.json created"
+          ls -al src/main/resources/firebase
 
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
