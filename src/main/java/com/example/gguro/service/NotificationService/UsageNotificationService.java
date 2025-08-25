@@ -5,27 +5,14 @@ import com.example.gguro.domain.NotificationSetting;
 import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
 import com.example.gguro.domain.enums.NotificationType;
-import com.example.gguro.jwt.TokenProvider;
-import com.example.gguro.repository.DeviceRepository;
-import com.example.gguro.repository.NotificationSettingRepository;
-import com.example.gguro.repository.ProfileRepository;
-import com.example.gguro.repository.UserRepository;
+import com.example.gguro.repository.*;
 import com.example.gguro.service.FcmService.FcmService;
-import com.example.gguro.web.dto.ChatroomCheckResponseDTO;
-import com.example.gguro.web.dto.TokenDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +30,7 @@ public class UsageNotificationService {
     private final NotificationSettingRepository notificationSettingRepository;
     private final DeviceRepository deviceRepository;
     private final FcmService fcmService;
-    private final TokenProvider tokenProvider;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-    private static final String CHECK_TODAY_URL = "http://localhost:8000/api/chatrooms/check-today/";
+    private final JdbcTemplate jdbcTemplate;
 
     @Scheduled(cron = "0 0 13,18 * * *", zone = "Asia/Seoul")
     public void sendChatroomUsageReminder() {
@@ -72,25 +56,11 @@ public class UsageNotificationService {
 
                 log.debug("USAGE_REMINDER 켜져있음, profileId={}", profile.getId());
 
-                // 2. 오늘 채팅방 생성 여부 확인
-                Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        user.getId(), null,
-                        List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-                TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
-                String accessToken = tokenDTO.getAccessToken();
-
-                String url = CHECK_TODAY_URL + profile.getId();
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "Bearer " + accessToken);
-
-                HttpEntity<Void> entity = new HttpEntity<>(headers);
-
+                // 2. 오늘 채팅방 생성한 기록 여부 조회 후 없다면 알림 발송
                 try {
-                    ResponseEntity<ChatroomCheckResponseDTO> response =
-                            restTemplate.exchange(url, HttpMethod.GET, entity, ChatroomCheckResponseDTO.class);
+                    boolean createdToday = checkChatroomCreatedToday(profile.getId());
 
-                    if (response.getBody() != null && !response.getBody().isCreatedToday()) {
+                    if (!createdToday) {
                         sendUsageReminderNotification(user, profile);
                     }
 
@@ -128,8 +98,8 @@ public class UsageNotificationService {
                 String token = device.getToken();
                 if (fcmService.isTokenValid(token)) {
                     fcmService.sendNotificationToToken(token, title, body, data);
-                    log.info("USAGE_REMINDER 알림 발송됨: userId={}, profileId={}, token={}, body={}",
-                            user.getId(), profile.getId(), token, body);
+                    log.info("USAGE_REMINDER 알림 발송됨: userId={}, profileId={}, token={}, body={}, data={}",
+                            user.getId(), profile.getId(), token, body, data);
                 } else {
                     log.warn("USAGE_REMINDER 알림 발송 안됨: 유효하지 않은 토큰. userId={}, profileId={}, token={}, body={}",
                             user.getId(), profile.getId(), token, body);
@@ -155,5 +125,11 @@ public class UsageNotificationService {
         } else {
             return name + "아"; // 받침 있음
         }
+    }
+
+    private boolean checkChatroomCreatedToday(Long profileId) {
+        String sql = "SELECT COUNT(*) FROM chatroom WHERE profile_id = ? AND DATE(created_at) = CURRENT_DATE";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, profileId);
+        return count != null && count > 0;
     }
 }
