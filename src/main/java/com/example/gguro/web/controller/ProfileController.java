@@ -89,4 +89,14 @@ public class ProfileController {
         User user = getCurrentUser();
         return ApiResponse.onSuccess(profileQueryService.getProfileFirstNameNominativeCaseMarker(user, profileId));
     }
+
+    @GetMapping("/api/profile/first-name/{profileId}")
+    @Operation(summary = "해당 프로필의 이름을 반환", description = "해당 프로필의 이름을 조회할 수 있습니다.")
+    public ApiResponse<String> getProfileFirstName(
+            @PathVariable Long profileId
+    ) {
+        User user = getCurrentUser();
+        return ApiResponse.onSuccess(profileQueryService.getProfileFirstName(user, profileId));
+    }
+
 }

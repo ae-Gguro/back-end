@@ -51,10 +51,12 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
           chmod 400 ec2-key.pem
 
-      - name: Copy .jar to EC2
+      # rsync로 전송 최적화 (압축 + 덮어쓰기)
+      - name: Copy .jar to EC2 (with rsync)
         run: |
-          scp -i ec2-key.pem -o StrictHostKeyChecking=no ./build/libs/gguro-1.0.0.jar \
-          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/gguro-1.0.0.jar
+          rsync -avz -e "ssh -i ec2-key.pem -o StrictHostKeyChecking=no" \
+          ./build/libs/gguro-1.0.0.jar \
+          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
 
       - name: Update env file & restart service
         run: |

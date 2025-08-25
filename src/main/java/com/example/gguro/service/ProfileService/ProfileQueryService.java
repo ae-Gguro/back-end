@@ -10,4 +10,5 @@ public interface ProfileQueryService {
     ProfileResponseDTO.ProfileListViewDTO getProfileList(User user);
     String getProfileFirstNamePossessiveMarker(User user, Long profileId);
     String getProfileFirstNameNominativeCaseMarker(User user, Long profileId);
+    String getProfileFirstName(User user, Long profileId);
 }
