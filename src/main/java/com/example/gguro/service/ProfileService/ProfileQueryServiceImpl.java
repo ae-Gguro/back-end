@@ -69,6 +69,19 @@ public class ProfileQueryServiceImpl  implements ProfileQueryService {
         return getVocativeNameNominativeCaseMarker(profile.getFirstName());
     }
 
+    @Override
+    public String getProfileFirstName(User user, Long profileId) {
+        Profile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND));
+
+        // 해당 프로필이 이 유저의 프로필이 맞는지
+        if(!profile.getUser().equals(user)) {
+            throw new ProfileHandler(ErrorStatus.PROFILE_NOT_FOUND);
+        }
+
+        return profile.getFirstName();
+    }
+
     // 소유격 조사
     private String getVocativeNamePossessiveMarker(String name) {
         if (name == null || name.isEmpty()) return "";
