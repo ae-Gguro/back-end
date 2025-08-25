@@ -25,40 +25,23 @@ jobs:
 
       - name: Create application-prod.yml (PostgreSQL)
         run: |
-          mkdir -p src/main/resources
-          echo "spring:" > src/main/resources/application-prod.yml
-          echo "  config:" >> src/main/resources/application-prod.yml
-          echo "    activate:" >> src/main/resources/application-prod.yml
-          echo "      on-profile: prod" >> src/main/resources/application-prod.yml
-          echo "  datasource:" >> src/main/resources/application-prod.yml
-          echo "    url: jdbc:postgresql://\${DB_HOST}:\${DB_PORT}/\${DB_NAME}" >> src/main/resources/application-prod.yml
-          echo "    username: \${DB_USER}" >> src/main/resources/application-prod.yml
-          echo "    password: \${DB_PASSWORD}" >> src/main/resources/application-prod.yml
-          echo "    driver-class-name: org.postgresql.Driver" >> src/main/resources/application-prod.yml
-          echo "  sql:" >> src/main/resources/application-prod.yml
-          echo "    init:" >> src/main/resources/application-prod.yml
-          echo "      mode: never" >> src/main/resources/application-prod.yml
-          echo "  jpa:" >> src/main/resources/application-prod.yml
-          echo "    properties:" >> src/main/resources/application-prod.yml
-          echo "      hibernate:" >> src/main/resources/application-prod.yml
-          echo "        dialect: org.hibernate.dialect.PostgreSQLDialect" >> src/main/resources/application-prod.yml
-          echo "        show_sql: false" >> src/main/resources/application-prod.yml
-          echo "        format_sql: false" >> src/main/resources/application-prod.yml
-          echo "        use_sql_comments: false" >> src/main/resources/application-prod.yml
-          echo "        hbm2ddl:" >> src/main/resources/application-prod.yml
-          echo "          auto: update" >> src/main/resources/application-prod.yml
-          echo "        default_batch_fetch_size: 1000" >> src/main/resources/application-prod.yml
-          echo "" >> src/main/resources/application-prod.yml
-          echo "server:" >> src/main/resources/application-prod.yml
-          echo "  port: 443" >> src/main/resources/application-prod.yml
-          echo "  ssl:" >> src/main/resources/application-prod.yml
-          echo "    enabled: true" >> src/main/resources/application-prod.yml
-          echo "    key-store: /opt/gguro/keystore.p12" >> src/main/resources/application-prod.yml
-          echo "    key-store-password: gguro1234" >> src/main/resources/application-prod.yml
-          echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
-          echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
-          echo "apple:" >> src/main/resources/application-prod.yml
-          echo "  redirect-uri: https://gguro.store/api/auth/apple" >> src/main/resources/application-prod.yml
+            mkdir -p src/main/resources
+            echo "spring:" > src/main/resources/application-prod.yml
+            echo "  config:" >> src/main/resources/application-prod.yml
+            echo "    activate:" >> src/main/resources/application-prod.yml
+            echo "      on-profile: prod" >> src/main/resources/application-prod.yml
+            echo "  datasource:" >> src/main/resources/application-prod.yml
+            echo "    url: jdbc:postgresql://\${DB_HOST}:\${DB_PORT}/\${DB_NAME}" >> src/main/resources/application-prod.yml
+            echo "    username: \${DB_USER}" >> src/main/resources/application-prod.yml
+            echo "    password: \${DB_PASSWORD}" >> src/main/resources/application-prod.yml
+            echo "server:" >> src/main/resources/application-prod.yml
+            echo "  port: 443" >> src/main/resources/application-prod.yml
+            echo "  ssl:" >> src/main/resources/application-prod.yml
+            echo "    enabled: true" >> src/main/resources/application-prod.yml
+            echo "    key-store: /opt/gguro/keystore.p12" >> src/main/resources/application-prod.yml
+            echo "    key-store-password: gguro1234" >> src/main/resources/application-prod.yml
+            echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
+            echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
 
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
