@@ -13,6 +13,7 @@ import java.util.List;
 
 
 @Entity
+@Table(name = "\"user\"") // PostgreSQL 예약어 충돌 방지
 @Getter
 @DynamicUpdate
 @DynamicInsert
