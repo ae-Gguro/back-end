@@ -57,6 +57,8 @@ jobs:
           echo "    key-store-password: gguro1234" >> src/main/resources/application-prod.yml
           echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
           echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
+          echo "apple:" >> src/main/resources/application-prod.yml
+          echo "  redirect-uri: https://gguro.store/api/auth/apple" >> src/main/resources/application-prod.yml
 
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
