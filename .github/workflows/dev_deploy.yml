@@ -74,11 +74,11 @@ jobs:
       - name: Update env file & restart service
         run: |
           ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
-            echo "DB_NAME=gguro" > /home/ubuntu/gguro/app.env
-            echo "DB_USER=gguro" >> /home/ubuntu/gguro/app.env
-            echo "DB_PASSWORD=gguro1234" >> /home/ubuntu/gguro/app.env
-            echo "DB_HOST=gguro-postgresql.clq0q4880ewz.ap-northeast-2.rds.amazonaws.com" >> /home/ubuntu/gguro/app.env
-            echo "DB_PORT=5432" >> /home/ubuntu/gguro/app.env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" > /home/ubuntu/gguro/app.env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> /home/ubuntu/gguro/app.env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> /home/ubuntu/gguro/app.env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> /home/ubuntu/gguro/app.env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> /home/ubuntu/gguro/app.env
 
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}" >> /home/ubuntu/gguro/app.env
