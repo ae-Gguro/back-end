@@ -74,6 +74,7 @@ jobs:
             echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}" >> /home/ubuntu/gguro/app.env
+            echo "APPLE_PRIVATE_KEY_PATH=classpath:keys/apple-private-key.p8" >> /home/ubuntu/gguro/app.env
 
             # ✅ S3
             echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> /home/ubuntu/gguro/app.env
