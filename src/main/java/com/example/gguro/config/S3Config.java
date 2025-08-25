@@ -19,13 +19,13 @@ public class S3Config {
     @Value("${S3_SECRET_KEY}")
     private String secretKey;
 
-    @Value("${cloud.aws.region.static}")
+    @Value("${S3_REGION}")
     private String region;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${S3_BUCKET}")
     private String bucket;
 
-    @Value("${cloud.aws.path.profile-image}")
+    @Value("${S3_PROFILE_IMAGE_PATH}")
     private String profileImagePath;
 
     @Bean
