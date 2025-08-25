@@ -43,7 +43,7 @@ public class FcmService {
                     .build();
 
             FirebaseMessaging.getInstance().send(message);
-            log.debug("토큰 유효성 검사 성공: {}", token);
+            log.info("토큰 유효성 검사 성공: {}", token);
             return true;
         } catch (FirebaseMessagingException e) {
             log.warn("토큰 유효성 검사 실패: token={}, 이유={}", token, e.getMessage());

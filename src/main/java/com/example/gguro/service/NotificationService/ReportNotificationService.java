@@ -27,8 +27,8 @@ public class ReportNotificationService {
     private final DeviceRepository deviceRepository;
     private final FcmService fcmService;
 
-    // 매일 10:00 알림
-    @Scheduled(cron = "0 0 10 * * *", zone = "Asia/Seoul")
+    // 매일 22:00 알림
+    @Scheduled(cron = "0 0 22 * * *", zone = "Asia/Seoul")
     public void sendDailyReportReminder() {
         List<User> users = userRepository.findAllWithProfilesAndSettings();
 
@@ -54,8 +54,8 @@ public class ReportNotificationService {
         }
     }
 
-    // 매주 일요일 22시 알림
-    @Scheduled(cron = "0 28 3 * * *", zone = "Asia/Seoul")
+    // 매주 월요일 10시 알림
+    @Scheduled(cron = "0 0 10 * * 1", zone = "Asia/Seoul")
     public void sendWeeklyReportReminder() {
         List<User> users = userRepository.findAllWithProfilesAndSettings();
 
