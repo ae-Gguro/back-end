@@ -46,4 +46,11 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
                 .ifPresent(device -> device.updateActive(false));
     }
 
+    @Override
+    // 디바이스 토큰들 삭제 (탈퇴 경우)
+    public void deleteDeviceToken(User user) {
+
+        deviceRepository.deleteAllByUser(user);
+    }
+
 }
