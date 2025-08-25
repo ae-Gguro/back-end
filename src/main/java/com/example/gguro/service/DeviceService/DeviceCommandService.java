@@ -8,4 +8,6 @@ public interface DeviceCommandService {
 
     Device registerDeviceToken(User user, DeviceRequestDTO.registerDeviceDTO request);
 
+    void deactivateDeviceToken(Long userId, String token);
+
 }
