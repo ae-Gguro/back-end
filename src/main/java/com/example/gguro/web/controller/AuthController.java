@@ -82,21 +82,15 @@ public class AuthController {
             description = "Apple 로그인 API",
             parameters = {
                     @Parameter(name = "code", in = ParameterIn.QUERY, description = "Apple에서 받은 인증 코드", required = true,
-                            content = @Content(mediaType = "application/x-www-form-urlencoded", schema = @Schema(type = "string"))),
-                    @Parameter(name = "user", in = ParameterIn.QUERY, description = "최초 로그인 시 받은 사용자 정보 (JSON 문자열)", required = false,
                             content = @Content(mediaType = "application/x-www-form-urlencoded", schema = @Schema(type = "string")))
             }
     )
     @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
-            @RequestParam("code") String code,
-            @RequestParam(value = "user", required = false) String userJson
+            @RequestParam("code") String code
     ) {
-        // --- 디버그 로그 추가 ---
         log.info("Received from Apple: code = {}", code);
-        log.info("Received from Apple: userJson = {}", userJson);
-        // ----------------------
-        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
+        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code));
     }
 
     // 유저 로그아웃

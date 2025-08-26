@@ -69,7 +69,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     private final String APPLE_URL = "https://appleid.apple.com";
 
     @Override
-    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String userJson) {
+    public UserResponseDTO.UserLoginResponseDTO appleLogin(String code) {
         AppleUserInfoResponse userInfo = getAppleUserInfo(code);
 
         String oauthId = userInfo.getSub();
@@ -77,39 +77,18 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
 
         Optional<User> optionalUser = userRepository.findByOauthId(oauthId);
 
+        User user;
         if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    user.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-
-            TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
-            return UserConverter.toUserLoginResponseDTO(tokenDTO);
+            user = optionalUser.get();
+        } else {
+            // 신규 유저 생성 시 Apple은 이름을 주지 않음 → 기본 닉네임
+            String nickname = (email != null) ? email.split("@")[0] : "사용자";
+            user = UserConverter.toUserWithOauthId(oauthId, email, nickname, SocialType.APPLE);
+            userRepository.save(user);
         }
-
-        String nickname = "사용자";
-        if (userJson != null) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                AppleLoginRequest.AppleUser parsedUser = objectMapper.readValue(userJson, AppleLoginRequest.AppleUser.class);
-
-                if (parsedUser.getName() != null) {
-                    String first = parsedUser.getName().getFirstName();
-                    String last = parsedUser.getName().getLastName();
-                    nickname = ((last != null ? last : "") + (first != null ? first : "")).trim();
-                }
-
-            } catch (JsonProcessingException e) {
-                log.warn("Apple user JSON 파싱 실패", e);
-            }
-        }
-
-        User newUser = UserConverter.toUserWithOauthId(oauthId, email, nickname, SocialType.APPLE);
-        userRepository.save(newUser);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                newUser.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                user.getId(), null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
         TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);

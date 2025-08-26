@@ -6,5 +6,5 @@ import java.io.IOException;
 
 public interface AppleLoginCommandService {
 
-    UserResponseDTO.UserLoginResponseDTO appleLogin(String code, String userJson);
+    UserResponseDTO.UserLoginResponseDTO appleLogin(String code);
 }
