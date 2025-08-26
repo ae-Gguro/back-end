@@ -11,11 +11,8 @@ import com.example.gguro.jwt.TokenProvider;
 import com.example.gguro.repository.UserRepository;
 import com.example.gguro.web.dto.TokenDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
-import com.example.gguro.web.dto.apple.AppleLoginRequest;
 import com.example.gguro.web.dto.apple.AppleSocialTokenInfoResponse;
 import com.example.gguro.web.dto.apple.AppleUserInfoResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -33,7 +30,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -107,7 +103,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         params.add("client_secret", clientSecret);
         params.add("code", code);
         params.add("grant_type", "authorization_code");
-        params.add("redirect_uri", redirectUri);
+//        params.add("redirect_uri", redirectUri);
 
         System.out.println("Client Secret: " + clientSecret);
         log.debug("Client secret generated successfully");
