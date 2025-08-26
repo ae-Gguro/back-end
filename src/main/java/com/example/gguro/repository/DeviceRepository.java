@@ -15,4 +15,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findAllByUser(User member);
 
     List<Device> findByUserAndIsActiveTrue(User user);
+
+    void deleteAllByUser(User user);
 }

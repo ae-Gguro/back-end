@@ -10,4 +10,6 @@ public interface DeviceCommandService {
 
     void deactivateDeviceToken(Long userId, String token);
 
+    void deleteDeviceToken(User user);
+
 }
