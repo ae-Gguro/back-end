@@ -53,6 +53,12 @@ jobs:
           echo "[INFO] Firebase serviceAccountKey.json created"
           ls -al src/main/resources/firebase
 
+      - name: Create Apple private key
+        run: |
+          mkdir -p src/main/resources/keys
+          echo "${{ secrets.APPLE_PRIVATE_KEY }}" | base64 -d > src/main/resources/keys/apple-private-key.p8
+          echo "[INFO] Apple private key created"
+
       - name: Build with Gradle
         run: ./gradlew clean bootJar -x test
 
