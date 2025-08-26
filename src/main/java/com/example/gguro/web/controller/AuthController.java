@@ -13,7 +13,7 @@ import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.util.MultiValueMap;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -81,7 +81,7 @@ public class AuthController {
     @Operation(
             summary = "애플 로그인",
             description = "Apple 로그인 API",
-            requestBody = @RequestBody(
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
@@ -91,7 +91,7 @@ public class AuthController {
     )
     @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
-            @org.springframework.web.bind.annotation.RequestBody MultiValueMap<String, String> form
+            @RequestBody MultiValueMap<String, String> form
     ) {
         String code = form.getFirst("code");
         log.info("Received from Apple: code = {}", code);
