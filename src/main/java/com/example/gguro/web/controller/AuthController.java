@@ -11,6 +11,10 @@ import com.example.gguro.web.dto.UserResponseDTO;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -73,6 +77,16 @@ public class AuthController {
     }
 
     // 애플 로그인
+    @Operation(
+            summary = "애플 로그인",
+            description = "Apple 로그인 API",
+            parameters = {
+                    @Parameter(name = "code", in = ParameterIn.QUERY, description = "Apple에서 받은 인증 코드", required = true,
+                            content = @Content(mediaType = "application/x-www-form-urlencoded", schema = @Schema(type = "string"))),
+                    @Parameter(name = "user", in = ParameterIn.QUERY, description = "최초 로그인 시 받은 사용자 정보 (JSON 문자열)", required = false,
+                            content = @Content(mediaType = "application/x-www-form-urlencoded", schema = @Schema(type = "string")))
+            }
+    )
     @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
             @RequestParam("code") String code,
