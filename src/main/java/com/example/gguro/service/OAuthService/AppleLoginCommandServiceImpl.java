@@ -120,16 +120,18 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        // clientSecret 잘만들어지는지 확인
+        String clientSecret = generateClientSecret();
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("client_id", clientId);
-        params.add("client_secret", generateClientSecret());
+        params.add("client_secret", clientSecret);
         params.add("code", code);
         params.add("grant_type", "authorization_code");
         params.add("redirect_uri", redirectUri);
 
-        // clientSecret 잘만들어지는지 확인
-        String clientSecret = generateClientSecret();
         System.out.println("Client Secret: " + clientSecret);
+        log.debug("Client secret generated successfully");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
