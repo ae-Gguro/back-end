@@ -72,7 +72,7 @@ public class AuthController {
     }
 
     // 애플 로그인
-    @PostMapping("/api/auth/apple")
+    @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
             @RequestParam("code") String code,
             @RequestParam(value = "user", required = false) String userJson
