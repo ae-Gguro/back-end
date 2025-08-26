@@ -8,11 +8,12 @@ import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleCodeForm;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
 import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import org.springframework.util.MultiValueMap;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,15 +81,19 @@ public class AuthController {
     @Operation(
             summary = "애플 로그인",
             description = "Apple 로그인 API",
-            parameters = {
-                    @Parameter(name = "code", in = ParameterIn.QUERY, description = "Apple에서 받은 인증 코드", required = true,
-                            content = @Content(mediaType = "application/x-www-form-urlencoded", schema = @Schema(type = "string")))
-            }
+            requestBody = @RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                            schema = @Schema(implementation = AppleCodeForm.class)
+                    )
+            )
     )
     @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
-            @RequestParam("code") String code
+            @org.springframework.web.bind.annotation.RequestBody MultiValueMap<String, String> form
     ) {
+        String code = form.getFirst("code");
         log.info("Received from Apple: code = {}", code);
         return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code));
     }
