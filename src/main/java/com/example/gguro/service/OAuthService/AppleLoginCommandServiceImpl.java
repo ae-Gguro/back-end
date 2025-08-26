@@ -127,6 +127,10 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         params.add("grant_type", "authorization_code");
         params.add("redirect_uri", redirectUri);
 
+        // clientSecret 잘만들어지는지 확인
+        String clientSecret = generateClientSecret();
+        System.out.println("Client Secret: " + clientSecret);
+
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         ResponseEntity<AppleSocialTokenInfoResponse> response;
@@ -156,9 +160,12 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     }
 
     private String generateClientSecret() {
+        log.info("👉 generateClientSecret() 진입. clientId={}, teamId={}, keyId={}", clientId, teamId, keyId);
+
         try {
             LocalDateTime exp = LocalDateTime.now().plusMinutes(5);
-            return Jwts.builder()
+
+            String token = Jwts.builder()
                     .setHeaderParam(JwsHeader.KEY_ID, keyId)
                     .setIssuer(teamId)
                     .setAudience(APPLE_URL)
@@ -167,23 +174,36 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
                     .setExpiration(Date.from(exp.atZone(ZoneId.systemDefault()).toInstant()))
                     .signWith(getPrivateKey(), SignatureAlgorithm.ES256)
                     .compact();
+
+            log.info("✅ Client Secret 생성 성공 (앞 30자): {}", token.substring(0, Math.min(30, token.length())));
+            return token;
         } catch (Exception e) {
+            e.printStackTrace(); // JVM 표준 출력
+            log.error("❌ Apple Client Secret 생성 중 오류 발생", e); // logback 로그
             throw new AppleLoginHandler(ErrorStatus.APPLE_CLIENT_SECRET_GENERATION_FAIL);
         }
     }
 
     private PrivateKey getPrivateKey() {
+        log.info("👉 getPrivateKey() 실행됨. Resource={}", privateKeyResource);
+
         try (InputStream inputStream = privateKeyResource.getInputStream()) {
-            String pem = new String(inputStream.readAllBytes())
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
+            String pem = new String(inputStream.readAllBytes());
+            log.info("🔑 Raw Private Key (앞 50자): {}", pem.substring(0, Math.min(50, pem.length())));
+
+            pem = pem.replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s+", "");
+                    .replaceAll("\\r", "")
+                    .replaceAll("\\n", "")
+                    .trim();
 
             byte[] keyBytes = Base64.getDecoder().decode(pem);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
+            e.printStackTrace(); // JVM 표준 출력
+            log.error("❌ Apple private key parse failed", e);
             throw new AppleLoginHandler(ErrorStatus.APPLE_PRIVATE_KEY_PARSE_FAIL);
         }
     }

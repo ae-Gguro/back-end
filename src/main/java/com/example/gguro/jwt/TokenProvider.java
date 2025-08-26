@@ -73,14 +73,16 @@ public class TokenProvider {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(
-                        claims.get(AUTHORITIES_KEY).toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
 
-        Long userId = Long.valueOf(claims.getSubject());
+        // subject는 userId라고 가정
+        String userId = claims.getSubject();
 
-        return new UsernamePasswordAuthenticationToken(userId, "", authorities);
+        // credentials는 null로 두고, principal은 userId로 유지
+        return new UsernamePasswordAuthenticationToken(userId, null, authorities);
     }
 
     public boolean validateToken(String token) {

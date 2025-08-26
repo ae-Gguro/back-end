@@ -30,12 +30,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = resolveToken(request);
 
-        if (token != null && tokenProvider.validateToken(token)) {
-            // 블랙리스트에 있는지 확인
+        if (token == null) {
+            // 토큰이 없으면 그냥 다음 필터로 넘김 (Apple 로그인 등 허용된 요청 처리 가능)
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (tokenProvider.validateToken(token)) {
             if (blacklistedTokenRepository.findByToken(token).isPresent()) {
                 throw new UserHandler(ErrorStatus.LOGOUT_TOKEN);
             }
-
             Authentication auth = tokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
