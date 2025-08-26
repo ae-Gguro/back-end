@@ -78,6 +78,10 @@ public class AuthController {
             @RequestParam("code") String code,
             @RequestParam(value = "user", required = false) String userJson
     ) {
+        // --- 디버그 로그 추가 ---
+        log.info("Received from Apple: code = {}", code);
+        log.info("Received from Apple: userJson = {}", userJson);
+        // ----------------------
         return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code, userJson));
     }
 
