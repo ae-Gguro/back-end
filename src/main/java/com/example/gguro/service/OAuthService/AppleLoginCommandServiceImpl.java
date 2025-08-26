@@ -103,7 +103,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         params.add("client_secret", clientSecret);
         params.add("code", code);
         params.add("grant_type", "authorization_code");
-//        params.add("redirect_uri", redirectUri);
+        params.add("redirect_uri", redirectUri);
 
         System.out.println("Client Secret: " + clientSecret);
         log.debug("Client secret generated successfully");
