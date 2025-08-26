@@ -28,14 +28,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -94,8 +94,8 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     private AppleUserInfoResponse getAppleUserInfo(String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
-        // clientSecret 잘만들어지는지 확인
         String clientSecret = generateClientSecret();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -103,36 +103,46 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         params.add("client_secret", clientSecret);
         params.add("code", code);
         params.add("grant_type", "authorization_code");
-//        params.add("redirect_uri", redirectUri);
-
-        System.out.println("Client Secret: " + clientSecret);
-        log.debug("Client secret generated successfully");
+        // iOS 네이티브 로그인 → redirect_uri X
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<AppleSocialTokenInfoResponse> response;
         try {
-            response = new RestTemplate().exchange(
-                    APPLE_URL + "/auth/token",
-                    HttpMethod.POST,
-                    request,
-                    AppleSocialTokenInfoResponse.class
-            );
-        } catch (Exception e) {
-            throw new AppleLoginHandler(ErrorStatus.APPLE_AUTH_CODE_INVALID);
-        }
+            ResponseEntity<AppleSocialTokenInfoResponse> response =
+                    new RestTemplate().exchange(
+                            APPLE_URL + "/auth/token",
+                            HttpMethod.POST,
+                            request,
+                            AppleSocialTokenInfoResponse.class
+                    );
 
-        AppleSocialTokenInfoResponse tokenInfo = response.getBody();
-        if (tokenInfo == null || tokenInfo.getIdToken() == null) {
-            throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_MISSING);
-        }
+            AppleSocialTokenInfoResponse tokenInfo = response.getBody();
+            if (tokenInfo == null || tokenInfo.getIdToken() == null) {
+                throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_MISSING);
+            }
 
-        try {
             DecodedJWT jwt = JWT.decode(tokenInfo.getIdToken());
-
             return UserConverter.toAppleUserInfo(jwt);
+
+        } catch (HttpClientErrorException e) {
+            String body = e.getResponseBodyAsString();
+            log.error("Apple /auth/token 4xx. status={}, body={}", e.getStatusCode(), body);
+
+            if (body != null && body.contains("invalid_client")) {
+                // client_id / team_id / keyId / privateKey 문제
+                throw new AppleLoginHandler(ErrorStatus.APPLE_CLIENT_SECRET_GENERATION_FAIL);
+            }
+            if (body != null && body.contains("invalid_grant")) {
+                // authorization code 만료 or 이미 사용됨
+                throw new AppleLoginHandler(ErrorStatus.APPLE_AUTH_CODE_INVALID);
+            }
+
+            throw new AppleLoginHandler(ErrorStatus.APPLE_LOGIN_FAILED);
+        } catch (AppleLoginHandler e) {
+            throw e;
         } catch (Exception e) {
-            throw new AppleLoginHandler(ErrorStatus.APPLE_ID_TOKEN_PARSE_FAIL);
+            log.error("Apple /auth/token unexpected error", e);
+            throw new AppleLoginHandler(ErrorStatus.APPLE_LOGIN_FAILED);
         }
     }
 
@@ -140,23 +150,25 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         log.info("👉 generateClientSecret() 진입. clientId={}, teamId={}, keyId={}", clientId, teamId, keyId);
 
         try {
-            LocalDateTime exp = LocalDateTime.now().plusMinutes(5);
+            Instant now = Instant.now();
+            Instant exp = now.plusSeconds(300);
 
             String token = Jwts.builder()
                     .setHeaderParam(JwsHeader.KEY_ID, keyId)
                     .setIssuer(teamId)
-                    .setAudience(APPLE_URL)
+                    .setAudience("https://appleid.apple.com")
                     .setSubject(clientId)
-                    .setIssuedAt(new Date())
-                    .setExpiration(Date.from(exp.atZone(ZoneId.systemDefault()).toInstant()))
+                    .setIssuedAt(Date.from(now))
+                    .setExpiration(Date.from(exp))
                     .signWith(getPrivateKey(), SignatureAlgorithm.ES256)
                     .compact();
 
-            log.info("✅ Client Secret 생성 성공 (앞 30자): {}", token.substring(0, Math.min(30, token.length())));
+            log.info("Client Secret 생성 성공 (앞 30자): {}", token.substring(0, Math.min(30, token.length())));
             return token;
+        } catch (AppleLoginHandler e) {
+            throw e; // 이미 내부에서 매핑된 경우
         } catch (Exception e) {
-            e.printStackTrace(); // JVM 표준 출력
-            log.error("❌ Apple Client Secret 생성 중 오류 발생", e); // logback 로그
+            log.error("Apple Client Secret 생성 중 오류 발생", e);
             throw new AppleLoginHandler(ErrorStatus.APPLE_CLIENT_SECRET_GENERATION_FAIL);
         }
     }
@@ -179,8 +191,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            e.printStackTrace(); // JVM 표준 출력
-            log.error("❌ Apple private key parse failed", e);
+            log.error("Apple private key parse failed", e);
             throw new AppleLoginHandler(ErrorStatus.APPLE_PRIVATE_KEY_PARSE_FAIL);
         }
     }
