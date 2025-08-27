@@ -56,9 +56,6 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     @Value("${apple.key-id}")
     private String keyId;
 
-    @Value("${apple.redirect-uri}")
-    private String redirectUri;
-
     @Value("${apple.private-key-path}")
     private Resource privateKeyResource;
 
@@ -103,7 +100,6 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
         params.add("client_secret", clientSecret);
         params.add("code", code);
         params.add("grant_type", "authorization_code");
-        // iOS 네이티브 로그인 → redirect_uri X
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
@@ -147,7 +143,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     }
 
     private String generateClientSecret() {
-        log.info("👉 generateClientSecret() 진입. clientId={}, teamId={}, keyId={}", clientId, teamId, keyId);
+        log.info("generateClientSecret() 진입. clientId={}, teamId={}, keyId={}", clientId, teamId, keyId);
 
         try {
             Instant now = Instant.now();
@@ -166,7 +162,7 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
             log.info("Client Secret 생성 성공 (앞 30자): {}", token.substring(0, Math.min(30, token.length())));
             return token;
         } catch (AppleLoginHandler e) {
-            throw e; // 이미 내부에서 매핑된 경우
+            throw e;
         } catch (Exception e) {
             log.error("Apple Client Secret 생성 중 오류 발생", e);
             throw new AppleLoginHandler(ErrorStatus.APPLE_CLIENT_SECRET_GENERATION_FAIL);
@@ -174,11 +170,11 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     }
 
     private PrivateKey getPrivateKey() {
-        log.info("👉 getPrivateKey() 실행됨. Resource={}", privateKeyResource);
+        log.info("getPrivateKey() 실행됨. Resource={}", privateKeyResource);
 
         try (InputStream inputStream = privateKeyResource.getInputStream()) {
             String pem = new String(inputStream.readAllBytes());
-            log.info("🔑 Raw Private Key (앞 50자): {}", pem.substring(0, Math.min(50, pem.length())));
+            log.info("Raw Private Key (앞 50자): {}", pem.substring(0, Math.min(50, pem.length())));
 
             pem = pem.replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
