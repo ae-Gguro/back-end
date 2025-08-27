@@ -56,9 +56,6 @@ public class AppleLoginCommandServiceImpl implements AppleLoginCommandService {
     @Value("${apple.key-id}")
     private String keyId;
 
-    @Value("${apple.redirect-uri}")
-    private String redirectUri;
-
     @Value("${apple.private-key-path}")
     private Resource privateKeyResource;
 
