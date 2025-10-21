@@ -1,4 +1,4 @@
-name: GGURO Dev CI/CD
+name: GGURO Dev CI/CD (Docker)
 
 on:
   pull_request:
@@ -8,98 +8,84 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
 
     steps:
+      # 소스코드 체크아웃
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      # Docker Buildx 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Docker 캐시 복원
+      - name: Restore Docker cache
+        uses: actions/cache@v4
         with:
-          java-version: 17
-          distribution: temurin
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+      # GHCR 로그인
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create application-prod.yml (PostgreSQL)
-        run: |
-            mkdir -p src/main/resources
-            echo "spring:" > src/main/resources/application-prod.yml
-            echo "  config:" >> src/main/resources/application-prod.yml
-            echo "    activate:" >> src/main/resources/application-prod.yml
-            echo "      on-profile: prod" >> src/main/resources/application-prod.yml
-            echo "  datasource:" >> src/main/resources/application-prod.yml
-            echo "    url: jdbc:postgresql://\${DB_HOST}:\${DB_PORT}/\${DB_NAME}" >> src/main/resources/application-prod.yml
-            echo "    username: \${DB_USER}" >> src/main/resources/application-prod.yml
-            echo "    password: \${DB_PASSWORD}" >> src/main/resources/application-prod.yml
-            echo "server:" >> src/main/resources/application-prod.yml
-            echo "  port: 443" >> src/main/resources/application-prod.yml
-            echo "  ssl:" >> src/main/resources/application-prod.yml
-            echo "    enabled: true" >> src/main/resources/application-prod.yml
-            echo "    key-store: /opt/gguro/keystore.p12" >> src/main/resources/application-prod.yml
-            echo "    key-store-password: gguro1234" >> src/main/resources/application-prod.yml
-            echo "    key-store-type: PKCS12" >> src/main/resources/application-prod.yml
-            echo "    key-alias: springboot-cert" >> src/main/resources/application-prod.yml
 
-      # ✅ Firebase 키 생성 (cat <<EOF 사용)
-      - name: Create Firebase key
-        run: |
-          mkdir -p src/main/resources/firebase
-          cat > src/main/resources/firebase/serviceAccountKey.json << 'EOF'
-          ${{ secrets.FIREBASE_KEY_JSON }}
-          EOF
-          echo "[INFO] Firebase serviceAccountKey.json created"
-          ls -al src/main/resources/firebase
+      # Docker 이미지 빌드 & 푸시
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/gguro:latest
+          build-args: |
+            FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }}
+            APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
-      - name: Create Apple private key
-        run: |
-          mkdir -p src/main/resources/keys
-          echo "${{ secrets.APPLE_PRIVATE_KEY }}" | base64 -d > src/main/resources/keys/apple-private-key.p8
-          echo "[INFO] Apple private key created"
-
-      - name: Build with Gradle
-        run: ./gradlew clean bootJar -x test
-
-      - name: Create SSH key file
+      # EC2에 배포
+      - name: Deploy to EC2
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
           chmod 400 ec2-key.pem
 
-      # rsync로 전송 최적화 (압축 + 덮어쓰기)
-      - name: Copy .jar to EC2 (with rsync)
-        run: |
-          rsync -avz -e "ssh -i ec2-key.pem -o StrictHostKeyChecking=no" \
-          ./build/libs/gguro-1.0.0.jar \
-          ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
-
-      - name: Update env file & restart service
-        run: |
           ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
             echo "DB_NAME=${{ secrets.DB_NAME }}" > /home/ubuntu/gguro/app.env
             echo "DB_USER=${{ secrets.DB_USER }}" >> /home/ubuntu/gguro/app.env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> /home/ubuntu/gguro/app.env
             echo "DB_HOST=${{ secrets.DB_HOST }}" >> /home/ubuntu/gguro/app.env
             echo "DB_PORT=${{ secrets.DB_PORT }}" >> /home/ubuntu/gguro/app.env
-
+          
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/gguro/app.env
-
-            # ✅ Apple 로그인용
+          
+            # Apple 로그인용
             echo "APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}" >> /home/ubuntu/gguro/app.env
             echo "APPLE_PRIVATE_KEY_PATH=classpath:keys/apple-private-key.p8" >> /home/ubuntu/gguro/app.env
-
-            # ✅ S3
+          
+            # S3
             echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> /home/ubuntu/gguro/app.env
             echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> /home/ubuntu/gguro/app.env
             echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> /home/ubuntu/gguro/app.env
             echo "S3_REGION=${{ secrets.S3_REGION }}" >> /home/ubuntu/gguro/app.env
             echo "S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}" >> /home/ubuntu/gguro/app.env
-
-            sudo systemctl daemon-reload
-            sudo systemctl restart gguro
-            sudo systemctl enable gguro
+          
+            echo "Pull latest Docker image..."
+            docker compose pull gguro
+          
+            echo "Restart container..."
+            docker compose up -d gguro
+          
+            echo "Deployment complete"
           CMD
+
+          rm -f ec2-key.pem
