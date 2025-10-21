@@ -43,7 +43,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/gguro:latest
+          tags: ghcr.io/${{ toLower(github.repository_owner) }}/gguro:latest
           build-args: |
             FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }}
             APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}
