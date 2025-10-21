@@ -1,8 +1,8 @@
 name: GGURO Dev CI/CD (Docker)
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches: [ develop ]
   workflow_dispatch:
 
 jobs:

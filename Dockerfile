@@ -4,12 +4,12 @@ FROM gradle:8.8-jdk17 AS builder
 WORKDIR /app
 
 # Gradle 캐시 최적화
-COPY build.gradle settings.gradle gradle.properties ./
+COPY build.gradle settings.gradle ./
 COPY gradle gradle
 RUN gradle dependencies --no-daemon || return 0
 
 # 전체 소스 복사
-COPY src/main/java .
+COPY . .
 
 # Firebase & Apple Key 자동 생성
 ARG FIREBASE_KEY_JSON
