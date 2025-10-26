@@ -16,7 +16,7 @@ ARG FIREBASE_KEY_JSON
 ARG APPLE_PRIVATE_KEY
 
 RUN mkdir -p src/main/resources/firebase \
-    && echo "$FIREBASE_KEY_JSON" > src/main/resources/firebase/serviceAccountKey.json \
+    && echo "$FIREBASE_KEY_JSON" | base64 -d > src/main/resources/firebase/serviceAccountKey.json \
     && mkdir -p src/main/resources/keys \
     && echo "$APPLE_PRIVATE_KEY" | base64 -d > src/main/resources/keys/apple-private-key.p8
 
