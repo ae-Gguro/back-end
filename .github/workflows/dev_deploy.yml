@@ -53,15 +53,16 @@ jobs:
             S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}
             EOF
 
-            echo "Stop old container..."
-            docker compose down || true
-
-            echo "Build new image..."
-            docker build -t gguro .
-
-            echo "Start new container..."
-            docker compose up -d gguro
-
+            echo "Build new Docker image..."
+            docker-compose down || true
+            docker build \
+            --build-arg FIREBASE_KEY_JSON='${{ secrets.FIREBASE_KEY_JSON }}' \
+            --build-arg APPLE_PRIVATE_KEY='${{ secrets.APPLE_PRIVATE_KEY }}' \
+            -t gguro .
+      
+            echo "Starting container..."
+            docker-compose up -d gguro
+      
             echo "Deployment complete"
           CMD
 
