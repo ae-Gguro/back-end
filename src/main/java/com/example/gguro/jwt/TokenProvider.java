@@ -4,13 +4,12 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import com.example.gguro.web.dto.TokenDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -53,6 +52,7 @@ public class TokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setSubject(authentication.getPrincipal().toString())
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -73,14 +73,16 @@ public class TokenProvider {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(
-                        claims.get(AUTHORITIES_KEY).toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
 
-        Long userId = Long.valueOf(claims.getSubject());
+        // subject는 userId라고 가정
+        String userId = claims.getSubject();
 
-        return new UsernamePasswordAuthenticationToken(userId, "", authorities);
+        // credentials는 null로 두고, principal은 userId로 유지
+        return new UsernamePasswordAuthenticationToken(userId, null, authorities);
     }
 
     public boolean validateToken(String token) {
@@ -99,6 +101,29 @@ public class TokenProvider {
         return false;
     }
 
+    // RefreshToken 검증
+    public void validateRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw e;
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("유효하지 않은 RefreshToken", e);
+        }
+    }
+
+    // RefreshToken 기반 재발급
+    public TokenDTO reissueToken(String refreshToken) {
+        Claims claims = parseClaims(refreshToken);
+        String userId = claims.getSubject();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        return generateTokenDto(authentication);
+    }
+
     private Claims parseClaims(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build()
@@ -106,5 +131,34 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    // 헤더에서 토큰 추출
+    public String resolveAccessToken(HttpServletRequest request) {
+
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return null;
+        }
+
+        return header.split(" ")[1];
+    }
+
+    public long getRemainingExpiration(String token) {
+        try {
+            Date expiration = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+            return expiration.getTime() - System.currentTimeMillis();
+        } catch (ExpiredJwtException e) {
+            return 0;
+        }
+    }
+
+    public String getUserIdFromToken(String token) {
+        return parseClaims(token).getSubject();
     }
 }

@@ -3,21 +3,32 @@ package com.example.gguro.service.UserService;
 import com.example.gguro.apiPayload.code.status.ErrorStatus;
 import com.example.gguro.apiPayload.exception.handler.UserHandler;
 import com.example.gguro.converter.UserConverter;
+import com.example.gguro.domain.BlacklistedToken;
+import com.example.gguro.domain.Profile;
 import com.example.gguro.domain.User;
 import com.example.gguro.jwt.TokenProvider;
+import com.example.gguro.repository.BlacklistedTokenRepository;
+import com.example.gguro.repository.DeviceRepository;
+import com.example.gguro.repository.ProfileRepository;
 import com.example.gguro.repository.UserRepository;
+import com.example.gguro.service.DeviceService.DeviceCommandService;
 import com.example.gguro.web.dto.TokenDTO;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Transactional
@@ -27,6 +38,11 @@ public class UserCommandServiceImpl implements UserCommandService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+    private final DeviceCommandService deviceCommandService;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+    private final DeviceRepository deviceRepository;
+    private final ProfileRepository profileRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public User signUp(UserRequestDTO.UserSignUpDTO request) {
@@ -64,5 +80,77 @@ public class UserCommandServiceImpl implements UserCommandService{
         TokenDTO tokenDTO = tokenProvider.generateTokenDto(authentication);
 
         return UserConverter.toUserLoginResponseDTO(tokenDTO);
+    }
+
+    @Override
+    public UserResponseDTO.UserLoginResponseDTO reissueToken(String refreshToken) {
+        try {
+            // RefreshToken 검증
+            tokenProvider.validateRefreshToken(refreshToken);
+
+            // 새 AccessToken + RefreshToken 발급
+            TokenDTO tokenDTO = tokenProvider.reissueToken(refreshToken);
+
+            return UserConverter.toUserLoginResponseDTO(tokenDTO);
+
+        } catch (ExpiredJwtException eje) {
+            throw new UserHandler(ErrorStatus.TOKEN_EXPIRED);
+        } catch (IllegalArgumentException iae) {
+            throw new UserHandler(ErrorStatus.INVALID_TOKEN);
+        }
+    }
+
+    public void logout(HttpServletRequest request, String deviceToken) {
+        try {
+            String accessToken = tokenProvider.resolveAccessToken(request);
+
+            if (accessToken == null) {
+                throw new UserHandler(ErrorStatus.INVALID_TOKEN);
+            }
+
+            if (tokenProvider.validateToken(accessToken)) {
+                String userId = tokenProvider.getUserIdFromToken(accessToken);
+
+                System.out.println("이제 디바이스 토큰 비활성화");
+                // 디바이스 토큰 비활성화
+                deviceCommandService.deactivateDeviceToken(Long.valueOf(userId), deviceToken);
+
+                System.out.println("이제 블랙리스트에 저장");
+                // 블랙리스트에 저장
+                LocalDateTime expiration = LocalDateTime.now().plusSeconds(
+                        tokenProvider.getRemainingExpiration(accessToken) / 1000
+                );
+
+                BlacklistedToken blacklistedToken = BlacklistedToken.builder()
+                        .token(accessToken)
+                        .expiration(expiration)
+                        .build();
+
+                blacklistedTokenRepository.save(blacklistedToken);
+
+            } else {
+                throw new UserHandler(ErrorStatus.TOKEN_EXPIRED);
+            }
+
+        } catch (ExpiredJwtException e) {
+            throw new UserHandler(ErrorStatus.TOKEN_EXPIRED);
+        }
+    }
+
+    @Override
+    public void deleteUser(User user) {
+        // 채팅방 삭제 (해당 유저의 모든 프로필 기준)
+        String sql = "DELETE FROM chatroom WHERE profile_id IN (SELECT id FROM profile WHERE user_id = ?)";
+        jdbcTemplate.update(sql, user.getId());
+
+        // 프로필 삭제
+        profileRepository.deleteAllByUser(user);
+
+        // 디바이스 토큰 삭제
+        deviceRepository.deleteAllByUser(user);
+
+        // 유저 삭제
+        userRepository.delete(user);
+
     }
 }

@@ -2,18 +2,29 @@ package com.example.gguro.web.controller;
 
 import com.example.gguro.apiPayload.ApiResponse;
 import com.example.gguro.domain.User;
+import com.example.gguro.service.OAuthService.AppleLoginCommandService;
 import com.example.gguro.service.OAuthService.KakaoLoginCommandService;
+import com.example.gguro.service.OAuthService.NaverLoginCommandService;
 import com.example.gguro.service.UserService.UserCommandService;
 import com.example.gguro.web.dto.UserRequestDTO;
 import com.example.gguro.web.dto.UserResponseDTO;
+import com.example.gguro.web.dto.apple.AppleCodeForm;
 import com.example.gguro.web.dto.kakao.KakaoLoginRequestDTO;
-import com.example.gguro.web.dto.kakao.KakaoLoginResponseDTO;
+import com.example.gguro.web.dto.naver.NaverLoginRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+
+import static com.example.gguro.jwt.FindLoginUser.getCurrentUser;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +33,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserCommandService userCommandService;
-    private final KakaoLoginCommandService kakaoLoginService;
+    private final KakaoLoginCommandService kakaoLoginCommandService;
+    private final NaverLoginCommandService naverLoginCommandService;
+    private final AppleLoginCommandService appleLoginCommandService;
 
     // 기본 회원가입 API
     @PostMapping("/api/auth/signup")
@@ -42,11 +55,65 @@ public class AuthController {
         return ApiResponse.onSuccess(userCommandService.login(request));
     }
 
+    // AccessToken 재발급
+    @PostMapping("/api/auth/reissue")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> reissueToken(
+            @RequestHeader("RefreshToken") String refreshToken
+    ) {
+        return ApiResponse.onSuccess(userCommandService.reissueToken(refreshToken));
+    }
+
+    // 카카오 로그인
     @PostMapping("/api/auth/kakao")
     public ApiResponse<UserResponseDTO.UserLoginResponseDTO> kakaoLogin(@RequestBody @Valid KakaoLoginRequestDTO request) {
-        // KakaoLoginRequest 에는 프론트가 보내준 accessToken 이 담겨있음
-        UserResponseDTO.UserLoginResponseDTO serviceToken = kakaoLoginService.login(request.getAccessToken());
+        UserResponseDTO.UserLoginResponseDTO serviceToken = kakaoLoginCommandService.login(request.getAccessToken());
         return ApiResponse.onSuccess(serviceToken);
+    }
+
+    // 네이버 로그인
+    @PostMapping("/api/auth/naver")
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> naverLogin(@RequestBody @Valid NaverLoginRequestDTO request) {
+        UserResponseDTO.UserLoginResponseDTO serviceToken = naverLoginCommandService.login(request.getAccessToken());
+        return ApiResponse.onSuccess(serviceToken);
+    }
+
+    // 애플 로그인
+    @Operation(
+            summary = "애플 로그인",
+            description = "Apple 로그인 API",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+                            schema = @Schema(implementation = AppleCodeForm.class)
+                    )
+            )
+    )
+    @PostMapping(value = "/api/auth/apple", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ApiResponse<UserResponseDTO.UserLoginResponseDTO> appleLogin(
+            @RequestBody MultiValueMap<String, String> form
+    ) {
+        String code = form.getFirst("code");
+        log.info("Received from Apple: code = {}", code);
+        return ApiResponse.onSuccess(appleLoginCommandService.appleLogin(code));
+    }
+
+    // 유저 로그아웃
+    @PostMapping("/api/auth/logout")
+    public ApiResponse<String> logout(
+            HttpServletRequest request,
+            String deviceToken
+    ) {
+        userCommandService.logout(request, deviceToken);
+        return ApiResponse.onSuccess("로그아웃 되었습니다.");
+    }
+
+    // 유저 탈퇴
+    @DeleteMapping("/api/auth/delete")
+    public ApiResponse<String> deleteUser(){
+        User user = getCurrentUser();
+        userCommandService.deleteUser(user);
+        return ApiResponse.onSuccess("계정 탈퇴를 성공하였습니다.");
     }
 
 }

@@ -27,14 +27,33 @@ public enum ErrorStatus implements BaseErrorCode {
     // TEMP 관련 에러 (테스트)
     TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트 !"),
 
+    // Apple OAuth 관련 에러
+    APPLE_PUBLIC_KEY_RETRIEVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5001", "Apple 공개키를 가져오는 데 실패했습니다."),
+    APPLE_ID_TOKEN_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5002", "ID 토큰 파싱에 실패했습니다."),
+    APPLE_AUTH_CODE_INVALID(HttpStatus.BAD_REQUEST, "APPLE4001", "잘못된 authorization code입니다."),
+    APPLE_ID_TOKEN_MISSING(HttpStatus.BAD_REQUEST, "APPLE4002", "Apple로부터 유효한 ID 토큰을 받지 못했습니다."),
+    APPLE_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "APPLE4003", "Apple 로그인에 실패했습니다."),
+    APPLE_PRIVATE_KEY_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5003", "Apple 비공개 키 파싱에 실패했습니다."),
+    APPLE_CLIENT_SECRET_GENERATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "APPLE5004", "Apple Client Secret 생성에 실패했습니다."),
+
     // User 관련 에러
     USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER4001", "유저가 이미 존재합니다."),
     PASSWORDS_DO_NOT_MATCH(HttpStatus.BAD_REQUEST, "USER4002", "비밀번호가 일치하지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4003", "유저가 존재하지 않습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "USER4004", "비밀번호가 존재하지 않습니다."),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "USER4005", "유효하지 않은 토큰입니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER4006", "인증이 필요한 요청입니다.");
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER4006", "로그인이 필요합니다."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "USER4007", "토큰이 만료되었습니다."),
+    LOGOUT_TOKEN(HttpStatus.BAD_REQUEST, "USER4008", "이미 로그아웃된 토큰입니다."),
 
+    // Profile 관련 에러
+    PROFILE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "PROFILE4001","프로필은 최대 3개까지 등록할 수 있습니다."),
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROFILE4002", "프로필이 존재하지 않습니다."),
+
+    // NotificationSetting 관련 에러
+    NOTIFICATION_SETTING_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION_SETTING4001", "알림 세팅 내역이 존재하지 않습니다."),
+    ALL_NOTIFICATION_DISABLED(HttpStatus.BAD_REQUEST, "NOTIFICATION_SETTING4002", "전체 알림이 꺼져 있을 때는 개별 알림을 변경할 수 없습니다."),
+    INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTIFICATION_SETTING4003", "잘못된 알림 타입입니다.");
 
 
     private final HttpStatus httpStatus;

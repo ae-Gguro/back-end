@@ -2,13 +2,18 @@ package com.example.gguro.domain;
 
 import com.example.gguro.domain.common.BaseEntity;
 import com.example.gguro.domain.enums.SocialType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
+@Table(name = "\"user\"") // PostgreSQL 예약어 충돌 방지
 @Getter
 @DynamicUpdate
 @DynamicInsert
@@ -41,8 +46,24 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = true)
     private String email;
 
+    // 애플 로그인 시 제공하는 고유 식별자 (sub : 유저의 애플 id 고유 id)
+    @Column(name = "oauth_id", nullable = true, unique = true)
+    private String oauthId;
+
     // 소셜 로그인 타입 -> ENUM으로 수정
     @Enumerated(EnumType.STRING)
     @Column(name = "oauth_type", nullable = false)
     private SocialType oauthType;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Profile> profileList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Device> devices = new ArrayList<>();
+
+    public void removeProfile(Profile profile) {
+        profileList.remove(profile);
+        profile.setUser(null);
+    }
 }

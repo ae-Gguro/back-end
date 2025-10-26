@@ -1,0 +1,102 @@
+name: GGURO Dev CI/CD (Docker)
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------
+      # 1. 소스코드 체크아웃
+      # -------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # 2. SSH 키 파일 생성
+      # -------------------------------
+      - name: Create SSH key file
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
+          chmod 400 ec2-key.pem
+
+      # -------------------------------
+      # 3. EC2에 소스 및 Dockerfile 전송
+      # -------------------------------
+      - name: Copy files to EC2
+        run: |
+          rsync -avz -e "ssh -i ec2-key.pem -o StrictHostKeyChecking=no" \
+          ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
+
+      # -------------------------------
+      # 4. EC2 내부에서 빌드 및 Firebase key 주입
+      # -------------------------------
+      - name: Build & Run on EC2
+        env:
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APPLE_CLIENT_ID: ${{ secrets.APPLE_CLIENT_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_REDIRECT_URI: ${{ secrets.APPLE_REDIRECT_URI }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_PROFILE_IMAGE_PATH: ${{ secrets.S3_PROFILE_IMAGE_PATH }}
+          FIREBASE_KEY_JSON: ${{ secrets.FIREBASE_KEY_JSON }}
+        run: |
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
+            set -e
+            cd /home/ubuntu/gguro
+
+            echo "=== Update app.env ==="
+            cat <<EOL > app.env
+          DB_NAME=$DB_NAME
+          DB_USER=$DB_USER
+          DB_PASSWORD=$DB_PASSWORD
+          DB_HOST=$DB_HOST
+          DB_PORT=$DB_PORT
+          JWT_SECRET=$JWT_SECRET
+          APPLE_CLIENT_ID=$APPLE_CLIENT_ID
+          APPLE_TEAM_ID=$APPLE_TEAM_ID
+          APPLE_KEY_ID=$APPLE_KEY_ID
+          APPLE_REDIRECT_URI=$APPLE_REDIRECT_URI
+          APPLE_PRIVATE_KEY_PATH=classpath:keys/apple-private-key.p8
+          S3_ACCESS_KEY=$S3_ACCESS_KEY
+          S3_SECRET_KEY=$S3_SECRET_KEY
+          S3_BUCKET=$S3_BUCKET
+          S3_REGION=$S3_REGION
+          S3_PROFILE_IMAGE_PATH=$S3_PROFILE_IMAGE_PATH
+          EOL
+            
+            echo "=== Inject Firebase key ==="
+            echo "$FIREBASE_KEY_JSON" | base64 -d > firebase_key.json
+            
+            FIREBASE_KEY_JSON=$(tr -d '\n' < firebase_key.json)
+            
+            echo "=== Stop old container ==="
+            docker compose down || true
+            
+            echo "=== Build new image ==="
+            docker build -t gguro .
+            
+            echo "=== Start container with Firebase key ==="
+            FIREBASE_KEY_JSON="$FIREBASE_KEY_JSON" docker compose up -d gguro
+            
+            echo "Deployment complete"
+          EOF
+
+      # -------------------------------
+      # 5. SSH 키 정리
+      # -------------------------------
+      - name: Clean up SSH key
+        run: rm -f ec2-key.pem
