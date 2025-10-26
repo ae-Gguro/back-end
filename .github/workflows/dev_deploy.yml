@@ -47,12 +47,12 @@ jobs:
       # -------------------------------
       - name: Build & Run on EC2
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<'EOF'
             set -e
             cd /home/ubuntu/gguro
 
             echo "Update app.env ..."
-            cat > app.env <<EOF
+            cat > app.env <<EOL
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -69,8 +69,7 @@ jobs:
             S3_BUCKET=${{ secrets.S3_BUCKET }}
             S3_REGION=${{ secrets.S3_REGION }}
             S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}
-            FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }}
-            EOF
+            EOL
 
             echo "Stop previous container (if running)..."
             docker compose down || true
@@ -81,11 +80,11 @@ jobs:
               -t gguro .
 
             echo "Start new container..."
-            export FIREBASE_KEY_JSON='${{ secrets.FIREBASE_KEY_JSON }}'
-            docker compose up -d gguro
+            # export를 heredoc 밖에서 직접 전달하도록 수정
+            FIREBASE_KEY_JSON="${{ secrets.FIREBASE_KEY_JSON }}" docker compose up -d --build gguro
 
             echo "Deployment complete"
-          CMD
+          EOF
 
       # -------------------------------
       # 6. SSH 키 정리
