@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      FIREBASE_KEY_JSON: ${{ secrets.FIREBASE_KEY_JSON }}
+
     steps:
       # -------------------------------
       # 1. 소스코드 체크아웃
@@ -25,8 +28,7 @@ jobs:
           chmod 400 ec2-key.pem
 
       # -------------------------------
-      # 3. Firebase 키 파일 생성
-      #    (Base64 → JSON 디코딩)
+      # 3. Firebase 키 파일 생성 (Base64 → JSON)
       # -------------------------------
       - name: Create Firebase key file
         run: |
@@ -35,7 +37,7 @@ jobs:
           ls -lh firebase_key.json
 
       # -------------------------------
-      # 4. EC2에 소스 및 Dockerfile, Firebase 키 전송
+      # 4. EC2에 소스 및 Dockerfile 전송
       # -------------------------------
       - name: Copy files to EC2
         run: |
@@ -47,7 +49,7 @@ jobs:
       # -------------------------------
       - name: Build & Run on EC2
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<'EOF'
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
             set -e
             cd /home/ubuntu/gguro
 
@@ -80,8 +82,7 @@ jobs:
               -t gguro .
 
             echo "Start new container..."
-            # export를 heredoc 밖에서 직접 전달하도록 수정
-            FIREBASE_KEY_JSON="${{ secrets.FIREBASE_KEY_JSON }}" docker compose up -d --build gguro
+            FIREBASE_KEY_JSON="${FIREBASE_KEY_JSON}" docker compose up -d --build gguro
 
             echo "Deployment complete"
           EOF
