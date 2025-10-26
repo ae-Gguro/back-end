@@ -10,23 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 소스코드 체크아웃
+      # -------------------------------
+      # 1. 소스코드 체크아웃
+      # -------------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
-      # SSH 키 생성
+      # -------------------------------
+      # 2. SSH 키 파일 생성
+      # -------------------------------
       - name: Create SSH key file
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ec2-key.pem
           chmod 400 ec2-key.pem
 
-      # EC2에 소스 및 Dockerfile 전송
+      # -------------------------------
+      # 3. Firebase 키 파일 생성
+      #    (Base64 → JSON 디코딩)
+      # -------------------------------
+      - name: Create Firebase key file
+        run: |
+          echo "${{ secrets.FIREBASE_KEY_JSON }}" | base64 -d > firebase_key.json
+          echo "Firebase key created successfully"
+          ls -lh firebase_key.json
+
+      # -------------------------------
+      # 4. EC2에 소스 및 Dockerfile, Firebase 키 전송
+      # -------------------------------
       - name: Copy files to EC2
         run: |
           rsync -avz -e "ssh -i ec2-key.pem -o StrictHostKeyChecking=no" \
           ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
 
-      # EC2에서 Docker 빌드 및 재시작
+      # -------------------------------
+      # 5. EC2 내부에서 빌드 및 재시작
+      # -------------------------------
       - name: Build & Run on EC2
         run: |
           ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
@@ -53,24 +71,22 @@ jobs:
             S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}
             EOF
 
+            echo "Stop previous container (if running)..."
+            docker compose down || true
+
             echo "Build new Docker image..."
-            docker-compose down || true
             docker build \
-            --build-arg FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }} \
-            --build-arg APPLE_PRIVATE_KEY='${{ secrets.APPLE_PRIVATE_KEY }}' \
-            -t gguro .
-      
-            echo "Starting container..."
-            docker-compose up -d gguro
-      
+              --build-arg APPLE_PRIVATE_KEY='${{ secrets.APPLE_PRIVATE_KEY }}' \
+              -t gguro .
+
+            echo "Start new container..."
+            docker compose up -d gguro
+
             echo "Deployment complete"
           CMD
 
-      # firebase 디버그 확인
-      - name: Debug Firebase Key
-        run: |
-          echo "Length of FIREBASE_KEY_JSON: ${#FIREBASE_KEY_JSON}"
-
-      # SSH 키 정리
+      # -------------------------------
+      # 6. SSH 키 정리
+      # -------------------------------
       - name: Clean up SSH key
         run: rm -f ec2-key.pem

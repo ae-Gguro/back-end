@@ -12,12 +12,12 @@ RUN gradle dependencies --no-daemon || return 0
 COPY . .
 
 # Firebase & Apple Key 자동 생성
-ARG FIREBASE_KEY_JSON
-ARG APPLE_PRIVATE_KEY
+# firebase_key.json은 Actions 단계에서 생성되어 COPY
+COPY firebase_key.json src/main/resources/firebase/serviceAccountKey.json
 
-RUN mkdir -p src/main/resources/firebase \
-    && echo "$FIREBASE_KEY_JSON" | base64 -d > src/main/resources/firebase/serviceAccountKey.json \
-    && mkdir -p src/main/resources/keys \
+# Apple Private Key는 base64로 전달되어 복호화
+ARG APPLE_PRIVATE_KEY
+RUN mkdir -p src/main/resources/keys \
     && echo "$APPLE_PRIVATE_KEY" | base64 -d > src/main/resources/keys/apple-private-key.p8
 
 # 빌드 실행
