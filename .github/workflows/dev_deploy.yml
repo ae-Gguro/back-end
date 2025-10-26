@@ -66,6 +66,11 @@ jobs:
             echo "Deployment complete"
           CMD
 
+      # firebase 디버그 확인
+      - name: Debug Firebase Key
+        run: |
+          echo "Length of FIREBASE_KEY_JSON: ${#FIREBASE_KEY_JSON}"
+
       # SSH 키 정리
       - name: Clean up SSH key
         run: rm -f ec2-key.pem
