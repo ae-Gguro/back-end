@@ -56,7 +56,7 @@ jobs:
             echo "Build new Docker image..."
             docker-compose down || true
             docker build \
-            --build-arg FIREBASE_KEY_JSON='${{ secrets.FIREBASE_KEY_JSON }}' \
+            --build-arg FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }} \
             --build-arg APPLE_PRIVATE_KEY='${{ secrets.APPLE_PRIVATE_KEY }}' \
             -t gguro .
       
