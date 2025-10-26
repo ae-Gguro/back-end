@@ -62,7 +62,7 @@ jobs:
             EOF
 
             echo "Stop old container..."
-            docker-compose down || true
+            docker compose down || true
 
             echo "Build new image..."
             docker build -t gguro .
@@ -84,7 +84,7 @@ jobs:
             export FIREBASE_KEY_JSON=\$(cat firebase_key.json)
 
             echo "Start container..."
-            docker-compose up -d --build gguro
+            docker compose up -d --build gguro
 
             echo "Firebase key injection complete and container restarted"
           EOF
