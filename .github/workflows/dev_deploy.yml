@@ -37,7 +37,7 @@ jobs:
       # -------------------------------
       - name: Build & Run on EC2
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'CMD'
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << CMD
             set -e
             cd /home/ubuntu/gguro
 
