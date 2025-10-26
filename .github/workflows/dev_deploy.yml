@@ -82,7 +82,9 @@ jobs:
               -t gguro .
 
             echo "Start new container..."
-            FIREBASE_KEY_JSON='${{ secrets.FIREBASE_KEY_JSON }}' \
+            echo '${{ secrets.FIREBASE_KEY_JSON }}' > firebase_key.json
+            export FIREBASE_KEY_JSON=\$(cat firebase_key.json)
+
             docker compose up -d --build gguro
 
             echo "Deployment complete"
