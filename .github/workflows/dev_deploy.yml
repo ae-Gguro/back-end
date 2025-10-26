@@ -69,6 +69,7 @@ jobs:
             S3_BUCKET=${{ secrets.S3_BUCKET }}
             S3_REGION=${{ secrets.S3_REGION }}
             S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}
+            FIREBASE_KEY_JSON=${{ secrets.FIREBASE_KEY_JSON }}
             EOF
 
             echo "Stop previous container (if running)..."

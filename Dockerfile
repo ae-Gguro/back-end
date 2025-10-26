@@ -11,10 +11,6 @@ RUN gradle dependencies --no-daemon || return 0
 # 전체 소스 복사
 COPY . .
 
-# Firebase & Apple Key 자동 생성
-# firebase_key.json은 Actions 단계에서 생성되어 COPY
-COPY firebase_key.json src/main/resources/firebase/serviceAccountKey.json
-
 # Apple Private Key는 base64로 전달되어 복호화
 ARG APPLE_PRIVATE_KEY
 RUN mkdir -p src/main/resources/keys \
