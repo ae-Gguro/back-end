@@ -84,7 +84,7 @@ jobs:
             export FIREBASE_KEY_JSON=\$(cat firebase_key.json)
 
             echo "Start container..."
-            docker compose up -d gguro
+            docker compose up -d --build gguro
 
             echo "Firebase key injection complete and container restarted"
           EOF
