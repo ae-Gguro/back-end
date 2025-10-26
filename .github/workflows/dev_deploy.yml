@@ -11,13 +11,13 @@ jobs:
 
     steps:
       # -------------------------------
-      # 소스코드 체크아웃
+      # 1. 소스코드 체크아웃
       # -------------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
       # -------------------------------
-      # SSH 키 파일 생성
+      # 2. SSH 키 파일 생성
       # -------------------------------
       - name: Create SSH key file
         run: |
@@ -25,7 +25,7 @@ jobs:
           chmod 400 ec2-key.pem
 
       # -------------------------------
-      # EC2에 소스 및 Dockerfile 전송
+      # 3. EC2에 소스 및 Dockerfile 전송
       # -------------------------------
       - name: Copy files to EC2
         run: |
@@ -33,16 +33,16 @@ jobs:
           ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/gguro/
 
       # -------------------------------
-      # EC2 내부에서 빌드 및 .env 설정
+      # 4. EC2 내부에서 빌드 및 Firebase key 주입
       # -------------------------------
       - name: Build & Run on EC2
         run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << CMD
+          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<'EOF'
             set -e
             cd /home/ubuntu/gguro
 
-            echo "Update app.env ..."
-            cat > app.env <<EOF
+            echo "=== Update app.env ==="
+            cat <<EOL > app.env
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -59,38 +59,26 @@ jobs:
             S3_BUCKET=${{ secrets.S3_BUCKET }}
             S3_REGION=${{ secrets.S3_REGION }}
             S3_PROFILE_IMAGE_PATH=${{ secrets.S3_PROFILE_IMAGE_PATH }}
-            EOF
-
-            echo "Stop old container..."
-            docker compose down || true
-
-            echo "Build new image..."
-            docker build -t gguro .
-
-            echo "Build complete (Firebase key will be injected in next step)"
-          CMD
-
-      # -------------------------------
-      # Firebase Key 주입 및 재실행
-      # -------------------------------
-      - name: Inject Firebase key and restart container
-        run: |
-          ssh -i ec2-key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} <<EOF
-            set -e
-            cd /home/ubuntu/gguro
-
-            echo "Inject Firebase key..."
+            EOL
+  
+            echo "=== Inject Firebase key ==="
             echo "${{ secrets.FIREBASE_KEY_JSON }}" | base64 -d > firebase_key.json
             export FIREBASE_KEY_JSON=\$(cat firebase_key.json)
-
-            echo "Start container..."
-            docker compose up -d --build gguro
-
-            echo "Firebase key injection complete and container restarted"
+            
+            echo "=== Stop old container ==="
+            docker compose down || true
+            
+            echo "=== Build new image ==="
+            docker build -t gguro .
+            
+            echo "=== Start container with env ==="
+            FIREBASE_KEY_JSON="\$(cat firebase_key.json)" docker compose up -d gguro
+            
+            echo "Deployment complete"
           EOF
 
       # -------------------------------
-      # SSH 키 정리
+      # 5. SSH 키 정리
       # -------------------------------
       - name: Clean up SSH key
         run: rm -f ec2-key.pem
